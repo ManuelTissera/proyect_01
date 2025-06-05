@@ -1,0 +1,25 @@
+
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h1>News Data</h1>
+
+
+<script>
+
+   const viewDataFn = async () =>{
+
+      const url = '/api/economic-news';
+
+      const dataFetch = await fetch(url).then(res => res.json()).then(res => res).catch(err => console.error(err));
+      
+      console.log(dataFetch);
+
+   }
+
+   viewDataFn()
+</script>
+
+
+{% endblock %}

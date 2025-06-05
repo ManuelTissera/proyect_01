@@ -1,0 +1,147 @@
+{% extends "layout.html" %}
+
+
+{% block body %}
+
+<h1>Manual Range Statistics of SMA</h1>
+
+   <main class="main_sma_manual_range">
+      <section class="container_stat_obj">
+      </section>
+
+      <div class="block_one">
+         <div class="container_list_obj">
+            <div class="head_tab_list_obj">
+               <div>Date</div>
+               <div>Duration</div>
+               <div>Close</div>
+               <div>ΔSMA200</div>
+            </div>
+            <div class="body_tab_list_obj">
+
+            </div>
+         </div>
+         <div class="container_canvas_one">
+            <h4>Closing values of streaks with target</h4>
+            <canvas id="lineChart" width="600" height="300"></canvas>
+         </div>
+      </div>
+   </main>
+
+<script>
+   
+   const getDataRange = async () => {
+      const data_sma_range = await fetch("/SMA/manual_range")
+      .then(res => res.json())
+      .then(res => res)
+      .catch(err => console.error(err))
+
+
+      const containerStatObj = document.querySelector(".container_stat_obj");
+      const bodyTabObj = document.querySelector(".body_tab_list_obj");
+
+      const statsObj = data_sma_range.stats_obj;
+      const contStatsObj = `
+         <div class="grid_stats_obj">
+            <div>Count:</div><div>${(statsObj.count).toFixed(2)}</div>
+         </div>
+         <div class="grid_stats_obj">
+            <div>Mean:</div><div>${(statsObj.mean).toFixed(2)}</div>
+            <div>CV:</div><div>${(statsObj.cv).toFixed(2)}</div>
+            </div>
+         <div class="grid_stats_obj">
+            <div>Std:</div><div>${(statsObj.std).toFixed(2)}</div>
+            <div>Median:</div><div>${(statsObj.median).toFixed(2)}</div>
+         </div>
+      `;
+
+      containerStatObj.innerHTML = contStatsObj;
+
+      let delta = data_sma_range.delta_obj_values;
+      let deltaS = delta.sort((a,b) => a - b)
+      console.log(deltaS)
+
+      data_sma_range.list_obj.forEach((data,index) => {
+
+         let date = data.Date.split(" ")[0]
+
+         let row = `
+            <div class="row_tab_list_obj">
+               <div>${date}</div>
+               <div>${data.Val}</div>
+               <div>${data.Close}</div>
+               <div>${(data.ΔSMA200).toFixed(2)}</div>               
+            </div>
+         `;
+
+         bodyTabObj.innerHTML += row;
+      })
+
+      const mean = statsObj.mean;
+      const std = statsObj.std;
+
+      const ctx = document.getElementById('lineChart').getContext('2d');
+
+      new Chart(ctx, {
+         type: 'line',
+         data: {
+            labels: deltaS.map((_, i) => i + 1),
+            datasets: [
+               {
+                  label: 'ΔSMA200 Ordenado',
+                  data: deltaS,
+                  borderColor: 'blue',
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.1
+               },
+               {
+                  label: 'Media',
+                  data: Array(deltaS.length).fill(mean),
+                  borderColor: 'green',
+                  borderDash: [5, 5],
+                  borderWidth: 1,
+                  fill: false,
+                  pointRadius: 0
+               },
+               {
+                  label: '+1 STD',
+                  data: Array(deltaS.length).fill(mean + std),
+                  borderColor: 'orange',
+                  borderDash: [5, 5],
+                  borderWidth: 1,
+                  fill: false,
+                  pointRadius: 0
+               },
+               {
+                  label: '-1 STD',
+                  data: Array(deltaS.length).fill(mean - std),
+                  borderColor: 'orange',
+                  borderDash: [5, 5],
+                  borderWidth: 1,
+                  fill: false,
+                  pointRadius: 0
+               }
+            ]
+         },
+         options: {
+            responsive: true,
+            scales: {
+               x: {
+                  title: { display: true, text: 'Índice' }
+               },
+               y: {
+                  title: { display: true, text: 'ΔSMA200' }
+               }
+            }
+         }
+      });
+
+
+   }
+
+   getDataRange()
+</script>
+
+
+{% endblock %}

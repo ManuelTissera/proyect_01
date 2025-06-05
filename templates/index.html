@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h1>ESTE ES EL INCIO, CRACKK</h1>
+
+<span>Measurements General</span>
+
+<ul>
+   <li><a href="{{ url_for('measures_mct') }}">Measurements</a></li>
+   <li><a href="{{ url_for('news_data')}}">News</a></li>
+   <li><a href="{{ url_for('macd_data')}}">MACD Data</a></li>
+   <li><a href="{{ url_for('monetary_base')}}">Monetary Base</a></li>
+</ul>
+
+
+{% endblock %}

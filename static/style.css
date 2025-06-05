@@ -1,0 +1,373 @@
+
+body{
+   font-family: sans-serif;
+}
+/* 
+:root{
+   background-color: #283747;
+   background-color: #2e4053;
+   background-color: #5d6d7e;
+   background-color: #a04000;
+   background-color: #d35400;
+   background-color: #ecf0f1;
+   background-color: #283747;
+} */
+
+/* ========== LAYOUT.HTML ============= */
+
+.nav_layout{
+   background-color: #2e4053;
+   display: flex;
+   align-items: center;
+   height: 2.5rem;
+   margin-bottom: .4rem;
+}
+   .nav_layout a{
+      background-color: #5d6d7e;
+      color: #ecf0f1;
+      height: 2rem;
+      padding: 0rem 0.5rem;
+      margin: 0rem .5rem;
+      text-align: center;
+      line-height: 2rem;
+      text-decoration: none;
+   }
+
+
+
+/* =========== MEASURE.HTML ============ */
+.main_measure .cont_hist_1{
+   border: .3rem solid #444;
+}
+.main_measure .filter_hist_1{
+   display: flex;
+   height: 1.5rem;
+   border-bottom: .2rem solid #333;
+   padding: .3rem 1rem;
+}
+   .main_measure .filter_hist_1 > p{
+      margin:0;
+   }
+
+
+/* =========== HISTORIC_DATA.HTML ============ */
+
+.main_historic{
+   font-size: 14px;
+
+}
+
+.header_tab_hist, .row_tab_hist{
+   display: grid;
+   grid-template-columns: 5rem repeat(9,6rem);
+   text-align: center;
+   cursor: pointer;
+}
+
+.row_tab_hist:hover > div{
+   background-color: #4d5d7e;
+   color: #fff;
+}
+
+.header_tab_hist,.header_corr_cov_historic,.header_tab_regression{
+   background-color: #2e4053;
+   color: #fff;
+   width: max-content;
+   padding: .5rem 0rem;
+}
+
+.row_tab_hist div, .row_corr_cov_historic div, .row_tab_regression div{
+   border-left: .1rem solid #2e4053;
+   border-bottom: .1rem solid #2e4053;
+   padding: .2rem 0rem;
+}
+
+.row_tab_hist div:nth-child(10),
+.row_corr_cov_historic div:nth-child(7),
+.row_tab_regression div:nth-child(4){
+   border-right: .1rem solid #2e4053;
+}
+
+.container_btn_draw_hist{
+   display: flex;
+   justify-content: center;
+   
+}
+.btn_draw{
+   padding: .3rem;
+   border: .1rem solid #283747;
+   border-radius: .3rem;
+   margin: 0rem .5rem;
+   cursor: pointer;
+}
+
+.tab_corr_cov_historic,.container_tab_resgression{
+   margin: 2rem;
+   margin-left: calc(30vw * .7);
+}
+
+.header_corr_cov_historic, .row_corr_cov_historic{
+   display: grid;
+   grid-template-columns: 6rem repeat(6,5rem);
+   text-align: center;
+}
+
+.row_corr_cov_historic div:nth-child(1){
+   background-color: #5d6d7e;
+   color: #fff;
+   text-align: left;
+}
+
+.header_tab_regression, .row_tab_regression{
+   display: grid;
+   grid-template-columns: 10rem repeat(3,7rem);
+   text-align: center;
+}
+
+
+/* =========== BUYSELL.HTML ============ */
+
+
+.main_buysell .cont_hist_one {
+   width: 95vw;
+   height: 90vh;              /* altura deseada */
+   overflow-x: auto;
+   overflow-y: hidden;
+   border: 0.2rem solid #333;
+   padding: .5rem;
+   box-sizing: border-box;
+ }
+ 
+ .main_buysell #histograma_one {
+   height: 100%;              /* usa todo el alto del contenedor */
+   display: block;
+   border: 1px solid red;
+ }
+ 
+
+/* =========== BUYSELL_REVERSAL.HTML ============ */
+
+.cont_results{
+   display: inline-block;
+}
+
+.section_results{
+   display: flex;
+   justify-content: space-between;
+   border: .1rem solid #5d6d7e;
+   border-bottom: none;
+   width: 10rem;
+}
+.section_results span:nth-child(1){
+   background-color:#5d6d7e;
+   color: #fff;
+   padding: .1rem;
+}
+.section_results span:nth-child(2){
+   width: max-content;
+   padding: .1rem;
+   padding-left: .3rem
+}
+
+.section_results:nth-child(4){
+   border-bottom: .1rem solid #5d6d7e;
+}
+
+/* ----- filtro ------ */
+
+.cont_filter{
+   display: inline-block;
+   box-sizing: border-box;
+   border:0.1rem solid #283747;
+   border-radius: .3rem;
+   padding: .7rem;
+   padding-top: .2rem;
+}
+.cont_filter h4{
+   margin: 0;
+   padding: 0;
+}
+
+/* ----- canvas ------ */
+.cont_canvas{
+   display: flex;
+}
+   .graf_bar_count{
+      display: inline-block;
+      border: 0.1rem solid #2e4053;
+   }
+
+   /* ----- tabla years (file "buysell_reversal.html")------ */
+
+   .container_tab_years{
+      margin-left: 1rem;
+   }
+   .row_tab_years, .header_tab_years{
+      display: grid;
+      grid-template-columns: 2rem 4rem 4rem;
+      text-align: center;
+   }  
+      .header_tab_years{
+         background-color: #2e4053;
+         color: white;
+      }
+         .header_tab_years div{
+            padding: .2rem .3rem;
+         }
+      .row_tab_years div, .row_tab_res input{
+         border-bottom: .1rem solid #283747;
+         border-left: .1rem solid #283747;
+      }
+      .row_tab_years div:nth-child(3){
+         border-right: .1rem solid #283747;
+      }
+/* ----- tabla resultados ------ */
+
+.head_tab_res, .row_tab_res{
+   display: grid;
+   grid-template-columns: repeat(4,10.5rem) 5rem 5rem 10rem;
+}
+
+.head_tab_res div{
+   background-color: #444;
+   color: aliceblue;
+   font-weight: 700;
+   padding: .2rem;
+   text-align: center;
+}
+
+.cell_tab_res {
+   border-bottom: .1rem solid #2e4053;
+   border-left: .1rem solid #2e4053;
+   text-align: center;
+}
+.cell_tab_res:nth-child(5){
+   border-right: .1rem solid #2e4053;
+}
+
+
+
+/* ------- table results (buysell_years.html) ------------- */
+.container_tab_results_years{
+   margin: 1rem 0rem;
+}
+
+.container_year_block{
+   border-bottom: .1rem solid #283747;
+   display: flex;
+   align-items: center;
+}
+/* ------- table quarter (buysell_years.html) ------------- */
+
+.container_tab_quarter_years {
+   display: grid;
+   grid-template-columns: 7rem repeat(4,3rem);
+   margin: .5rem 0rem;
+   margin-left: 1rem;
+}
+.first_tab_quarter_years{
+   background-color:#5d6d7e;
+   color: white;
+}
+.first_tab_quarter_years div{
+   padding: .2rem;
+}
+.header_tab_quarter_years{
+   background-color:#283747;
+   color: white;
+}
+
+.column_tab_quarter_years div{
+   padding: .2rem 0rem;
+   text-align: center;
+   border-bottom: .1rem solid #283747;
+   border-right: .1rem solid #283747;
+}
+
+/* ------- table month (buysell_years.html) ------------- */
+
+.container_tab_month_years{
+   display: grid;
+   grid-template-columns: 7rem repeat(12,3rem);
+   margin: .5rem 0rem;
+   margin-left: 1rem;
+}
+.first_tab_month_years{
+   background-color:#5d6d7e;
+   color: white;
+}
+.first_tab_month_years div{
+   padding: .2rem;
+}
+.header_tab_month_years{
+   background-color:#283747;
+   color: white;
+}
+
+.column_tab_month_years div{
+   padding: .2rem 0rem;
+   text-align: center;
+   border-bottom: .1rem solid #283747;
+   border-right: .1rem solid #283747;
+}
+
+
+/* ------- table gral (buysell_years_rsi.html) ------------- */
+
+.header_table_years_rsi, .row_table_year_rsi{
+   display: grid;
+   grid-template-columns: repeat(5,7rem) 14rem 10rem 5rem 5rem;
+   width: 69rem;
+}
+
+.header_table_years_rsi{
+   background-color: #d35400;
+   color: #fff;
+   height: 2rem;
+   line-height: 2rem;
+   border-bottom: .3rem solid #a04000;
+}
+.row_table_year_rsi div {
+   border-right: .1rem solid #283747;
+}
+
+.container_data_draw_RSI{
+   border-bottom: .3rem solid #a04000;
+   padding: 1rem;
+}
+
+/* ------- (buysell_years_sma.html) ------------- */
+
+.head_tab_sma_obj, .row_tab_sma_obj{
+   display: grid;
+   grid-template-columns: 7rem repeat(6,4rem);
+   text-align: center;
+   width: 20rem;
+}
+
+.head_tab_sma_obj{
+   font-size: 14px;
+
+}
+
+.row_tab_sma_obj div{
+   border-bottom: .1rem solid #5d6d7e;
+   border-left: .1rem solid #5d6d7e;
+}
+
+
+.row_tab_sma_obj div:nth-child(7){
+   border-right: .1rem solid #5d6d7e;
+
+}
+.row_tab_sma_obj div:nth-child(4),
+.row_tab_sma_obj div:nth-child(7){
+   background-color:#5d6d7e;
+   color: #fff;
+
+}
+
+
+
+
+ 

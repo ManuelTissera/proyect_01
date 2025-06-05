@@ -1,0 +1,137 @@
+
+
+
+:root{
+   --border-color: #2e4053;
+}
+
+
+.blocks_macd_container div{
+   display: flex;
+   justify-content: space-around;
+   align-items: center;
+   width: 40rem;
+   text-align: center;
+}
+
+
+.blocks_macd_container div span{
+
+}
+
+.blocks_macd_container div:nth-child(1){
+   background-color: #c0392b;
+}
+
+.blocks_macd_container div:nth-child(2){
+   background-color: #229954;
+   border-bottom: .2rem solid #145a32;
+}
+
+.blocks_macd_container div:nth-child(3){
+   background-color: #229954;
+}
+
+.blocks_macd_container div:nth-child(4){
+   background-color: #c0392b;
+}
+
+/*  table */
+
+.container_macd_table{
+   display: grid;
+   grid-template-columns: 6rem 40.5rem;
+   align-items: center  ;
+}
+
+.row_macd_table{
+   display: grid;
+}
+.row_macd_table div{
+   text-align: center;
+   line-height: 2rem;
+   height: 2rem;
+   border-bottom: .1rem solid var(--border-color);
+   border-right: .1rem solid var(--border-color);
+}
+
+.row_macd_table div:nth-child(1){
+   border-left: .1rem solid var(--border-color);
+}
+.h_row_one{
+   grid-template-rows: 1fr repeat(2,6.2rem);
+   border: none;
+   border-top: .1rem solid var(--border-color);
+   border-left: .1rem solid var(--border-color);
+}
+
+.h_row_one div{
+   height: 6.1rem;
+   line-height: 6rem;
+   border: none;
+   border-bottom: .1rem solid var(--border-color);
+
+}
+
+.h_row_one div:nth-child(1){
+   height: 2rem;
+   grid-row: 1 / 2;
+   border: none;
+   border-bottom: .1rem solid var(--border-color);
+   background-color: var(--border-color);
+
+}
+
+.h_row_two{
+   grid-template-columns: 6.5rem repeat(4,8.5rem);
+   background-color: var(--border-color);
+   color: #fff;
+   border-bottom: .1rem solid var(--border-color);
+}
+
+.b_row{
+   grid-template-columns: 6.5rem repeat(4,6rem 2.5rem);
+
+}
+
+.b_row div{
+   height: 3rem;
+   line-height: 3rem;   
+}
+
+
+/*  table date macd */
+
+.header_table_date_macd{
+   display: grid;
+   grid-template-columns: 6rem repeat(2, 12rem);
+}
+
+.row_date_macd{
+   display: grid;
+   grid-template-columns: 6rem repeat(4,6rem);
+   text-align: center;
+}
+
+.header_table_date_macd div{
+   border-top: .1rem solid var(--border-color);
+   text-align: center;
+}
+
+.row_date_macd div, .header_table_date_macd div{
+   height: 2.5rem;
+   line-height: 2.5rem;
+   border-bottom: .1rem solid var(--border-color);
+   border-right: .1rem solid var(--border-color);
+}
+
+.row_date_macd div:nth-child(1), .header_table_date_macd div:nth-child(1){
+   border-left: .1rem solid var(--border-color);
+}
+
+.first_row_table_date div{
+   background-color: #95a5a6;
+   color: #fff;
+   height: 1.7rem;
+   line-height: 1.7rem;
+}

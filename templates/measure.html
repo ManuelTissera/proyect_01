@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<main class="main_measure">
+   <div class="cont_hist_1">
+      <div class="filter_hist_1">
+         <p>Desde:</p>
+         <input class="inp_date" id="hist_1_from" type="date">
+         <p>Hasta:</p>
+         <input class="inp_date" id="hist_1_to" type="Date">
+         <button class="btn_hist_1_aply">Aply</button>
+      </div>
+      <canvas id="histograma_one" width="900" height="400"></canvas>
+   </div>
+</main>
+
+<script>
+   const getDataMct = async () =>{
+      const results = await fetch('measures/mct')
+      .then(res => res.json())
+      .then(res => res)
+      .catch(err => console.error(err))
+
+      console.log(results)
+
+      const dataFilterHistOne = results.values.filter( row => row.Date.split("-")[0] === "2018");
+      console.log(dataFilterHistOne);
+
+      const histOne = document.getElementById("histograma_one");
+
+      const dateHistOne = dataFilterHistOne.map(row => row.Date);
+      const variance = dataFilterHistOne.map(row=> row.Variance);
+
+      new Chart(histOne, {
+         type: 'bar',
+         data: {
+            labels: dateHistOne,
+            datasets:[{
+               label: 'Variance Dayli',
+               data: variance,
+               backgroundColor: "##FFC300",
+            }]
+         }
+      })
+   }
+
+   getDataMct()
+
+
+   const histOneFrom = document.getElementById("hist_1_from");
+   const histOneTo = document.getElementById("hist_1_to");
+   const btnAply = document.querySelector(".btn_hist_1_aply");
+
+   btnAply.addEventListener("click",()=>{
+      console.log("Desde",histOneFrom.value);
+      console.log("Hasta",histOneTo.value);
+      console.log("Apretaaoo Chicoo!!")
+   })
+</script>
+
+{% endblock %}

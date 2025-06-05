@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <!-- Chart.js núcleo y adaptadores (SIN defer para asegurar orden) -->
+   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.3/build/global/luxon.min.js" defer></script>
+   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0/dist/chartjs-adapter-luxon.umd.min.js" defer></script>
+
+   <!-- Plugin financiero compatible con Chart.js v4 (SIN defer) -->
+   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
+
+   <!-- Otros scripts útiles -->
+   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js" defer></script>
+
+   <!-- Estilos -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='sma_style.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='main_goal_vs_inv.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='trends_percentage.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='macd_data.css') }}">
+
+   <title>Document</title>
+</head>
+<body>
+   <header>  
+      <nav class="nav_layout">
+         <a href="{{ url_for('home') }}">Inicio</a>
+         <a href="{{ url_for('historic_data') }}">Historic</a>
+         <a href="{{ url_for('buysell_trend') }}">Buy Sell Trend</a>
+         <a href="{{ url_for('SMA_calc') }}">Simple Moving Average</a>
+         <a href="{{ url_for('buysell_reversal') }}">Buy Sell Reversal</a>
+         <a href="{{ url_for('trends_percentage') }}">Trends</a>
+         <a href="{{ url_for('news_data') }}">News</a>
+      </nav>
+   </header>
+
+   {% block body %}{% endblock %}
+   {% block scripts %}{% endblock %}
+
+</body>
+</html>

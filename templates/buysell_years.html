@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h1>Statistics by Years</h1>
+   <div class="container_data_gral_buysell_years">
+
+   </div>
+<script>
+   const params = new URLSearchParams(window.location.search);
+   const yearsURL = params.get("years");
+   const allYearsURL = params.get("allyears");
+   const max_fallURL = params.get("max_fall");
+   const min_riseURL = params.get("min_rise");
+   const max_candlesURL = params.get("max_candles");
+   
+   const fetchData = async () => {
+      if (!yearsURL) {
+         console.error("No 'years' parameter found in URL");
+         return;
+      }
+   
+      try {
+         const url = `/buysell/multi_years?years=${yearsURL}&max_fall=${max_fallURL}&min_rise=${min_riseURL}&max_candles=${max_candlesURL}`;
+         const res = await fetch(url);
+         const data = await res.json();
+      
+         const yearURLArr = yearsURL.split(",");
+      
+         for (const yr of yearURLArr) {
+            renderYearBlock(yr, data[yr]);
+         }
+      } catch (err) {
+         console.error("Error loading year stats:", err);
+      }
+   };
+
+
+   const renderYearBlock = (year, revData) => {
+      const { Targ_str, Goals, Limit, No_confirm, ByQuarter, ByMonth } = revData;
+
+      // console.log(revData)
+
+//<a href="{{ url_for('buysell_years_rsi') }}?streakURL=${absTarget} ${signTarget}&years=${yearsURL}&limit=${max_fallURL}&objective=${min_riseURL}&candles=${max_candlesURL}">Statistics whith RSI</a>
+      const dataGral = document.querySelector(".container_data_gral_buysell_years")
+      let absTarget = Math.abs(Targ_str);
+      let signTarget = (Targ_str < 0)? "Negative":"Positive";
+      dataGral.innerHTML = `
+      <a href="{{ url_for('buysell_years_rsi') }}?streakURL=${Targ_str}&years=${yearsURL}&limit=${max_fallURL}&objective=${min_riseURL}&candles=${max_candlesURL}">Statistics Years whith RSI</a>
+      <a href="{{ url_for('buysell_years_sma') }}?streakURL=${Targ_str}&years=${yearsURL}&limit=${max_fallURL}&objective=${min_riseURL}&candles=${max_candlesURL}">Statistics Years whith SMA</a>
+      <h4>Trends following streaks ${absTarget} ${signTarget} candles.</h4>
+      <h3>Years Selected: ${yearsURL}</h3>
+      <p>All Years URL: ${allYearsURL}</p>
+      <p>Limit: ${max_fallURL} | Objective: ${min_riseURL} | Candles: ${max_candlesURL} </p>
+      `;
+
+      // console.log(max_fallURL)
+      // console.log(min_riseURL)
+      // console.log(max_candlesURL)
+
+
+      const orderedMonths = [
+         "01", "02", "03", "04", "05", "06",
+         "07", "08", "09", "10", "11", "12"
+      ];
+
+      const goalValues = orderedMonths.map(m => ByMonth[m].Goals);
+      const maxGoal = Math.max(...goalValues);
+
+      const container = document.createElement("div");
+      container.className = "container_year_block";
+
+      const h2 = document.createElement("h2");
+      h2.className = "h2_table_one_years";
+      h2.innerText = `Year ${year}`;
+      container.appendChild(h2);
+
+      const resumen = document.createElement("div");
+      resumen.className = "container_tab_results_years";
+      resumen.innerHTML = `
+         <section class="section_results"><span>Target Streak:</span><span>${Targ_str}</span></section>
+         <section class="section_results"><span>Goals:</span><span>${Goals.length}</span></section>
+         <section class="section_results"><span>Invalidate:</span><span>${Limit.length}</span></section>
+         <section class="section_results"><span>No confirmation:</span><span>${No_confirm.length}</span></section>
+      `;
+      container.appendChild(resumen);
+
+      const quarterContainer = document.createElement("div");
+      quarterContainer.className = "container_tab_quarter_years";
+      quarterContainer.innerHTML = `
+         <div class="first_tab_quarter_years">
+            <div>Quarters</div>
+            <div>Goals</div>
+            <div>Invalidate</div>
+            <div>No Confirm</div>
+         </div>
+         ${["Q1", "Q2", "Q3", "Q4"].map(q => `
+            <div class="column_tab_quarter_years">
+               <div class="header_tab_quarter_years">${q}</div>
+               <div>${ByQuarter[q].Goals}</div>
+               <div>${ByQuarter[q].Invalidated}</div>
+               <div>${ByQuarter[q].NoConfirmation}</div>
+            </div>
+         `).join("")}
+      `;
+      container.appendChild(quarterContainer);
+
+      const monthContainer = document.createElement("div");
+      monthContainer.className = "container_tab_month_years";
+      monthContainer.innerHTML = `
+         <div class="first_tab_month_years">
+            <div>Month</div>
+            <div>Goals</div>
+            <div>Invalidated</div>
+            <div>No Confirm</div>
+         </div>
+      `;
+
+      orderedMonths.forEach(month => {
+         const data = ByMonth[month];
+         const intensity = maxGoal === 0 ? 0 : data.Goals / maxGoal;
+         const r = Math.floor(240 - 240 * intensity);
+         const g = Math.floor(255 - (255 - 128) * intensity);
+         const b = Math.floor(240 - 240 * intensity);
+         const background = `rgb(${r}, ${g}, ${b})`;
+
+         const col = document.createElement("div");
+         col.className = "column_tab_month_years";
+         col.innerHTML = `
+            <div class="header_tab_month_years">${month}</div>
+            <div style="background-color: ${background}">${data.Goals}</div>
+            <div>${data.Invalidated}</div>
+            <div>${data.NoConfirmation}</div>
+         `;
+         monthContainer.appendChild(col);
+      });
+
+      container.appendChild(monthContainer);
+
+      const main = document.createElement("main");
+      // main.innerHTML = `
+      //    <div class="cont_table_res cont_tab_gral_years">
+      //       <div class="head_tab_res head_tab_gral_years">
+      //          <div>From</div>
+      //          <div>To</div>
+      //          <div>Open</div>
+      //          <div>Close</div>
+      //          <div>Results</div>
+      //       </div>
+      //       <div class="body_tab_res body_tab_gral_years"></div>
+      //    </div>
+      // `;
+      // const bodyTabRes = main.querySelector(".body_tab_res");
+      // const allData = [...Goals, ...Limit, ...No_confirm];
+
+      // allData.forEach(data => {
+      //    const [fromDate] = data.From.split("T");
+      //    const [toDate] = data.To.split("T");
+      //    const row = `
+      //       <div class="row_tab_res row_tab_gral_years">
+      //          <div class="cell_tab_res">${fromDate}</div>
+      //          <div class="cell_tab_res">${toDate}</div>
+      //          <div class="cell_tab_res">${data.Open}</div>
+      //          <div class="cell_tab_res">${data.Close}</div>
+      //          <div class="cell_tab_res">${data.Result}</div>
+      //       </div>
+      //    `;
+      //    bodyTabRes.innerHTML += row;
+      // });
+
+      container.appendChild(main);
+
+      document.body.appendChild(container);
+   };
+
+   fetchData();
+</script>
+{% endblock %}

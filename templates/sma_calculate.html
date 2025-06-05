@@ -1,0 +1,24 @@
+
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h1>CALCULOS SOBRE MEDIAS MOVILES</h1>
+
+<a href="{{ url_for('sma_manual_range')}}">Manual Range SMA</a>
+
+
+<script>
+   const getDataSMAFn = async () => {
+      const sma_data = await fetch('/SMAs/SMA/calculate')
+      .then(res => res.json())
+      .then(res => res)
+      .catch(err => console.error(err))
+      console.log(sma_data)
+   };
+
+   getDataSMAFn()
+</script>
+
+
+{% endblock %}

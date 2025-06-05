@@ -1,0 +1,272 @@
+
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+<h1>Buy Sell Reversal</h1>
+<article class="cont_h3_buysell_reversal"></article>
+
+<main class="main_buy_rev">
+   <div class="cont_results">
+
+   </div>
+
+   <div class="cont_filter">
+      <h4>Data Filter</h4>
+      <span>From:</span>
+      <input id="date_from" type="date">
+      <span>To:</span>
+      <input id="date_to" type="date">
+      <button class="btn_aply">Aply</button>
+   </div>
+
+   <div class="cont_canvas">
+      <canvas class="graf_bar_count" id="bars_by_year" width="800" height="400"></canvas>
+
+      <div class="container_tab_years">
+            <div class="header_tab_years">
+               <div></div>
+               <div>Year</div>
+               <div>Count</div>
+            </div>
+            <div class="body_tab_years">
+            <!-- Aqui se agregan las filas de YEARS -->
+            </div>
+            <button class="btn_select_years">Seleccionar</button>
+            <a id="viewYears"
+               data-base="{{ url_for('buysell_years') }}" 
+               href="{{ url_for('buysell_years') }}">Ver años</a>
+      </div>
+   </div>
+
+
+
+   <div class="cont_table_res">
+      <div class="head_tab_res">
+         <div>From</div>
+         <div>F-Time</div>
+         <div>To</div>
+         <div>To-Time</div>
+         <div>Open</div>
+         <div>Close</div>
+         <div>Results</div>
+      </div>
+      <div class="body_tab_res">
+         <!-- Aqui se agregan las filas -->
+      </div>
+   </div>
+</main>
+
+<script>
+   const fromDate = document.getElementById("date_from");
+   const toDate = document.getElementById("date_to");
+   const btnAply = document.querySelector(".btn_aply");
+
+   const bodyTabRes = document.querySelector(".body_tab_res");
+   const contResults = document.querySelector(".cont_results");
+   const canvas = document.getElementById("bars_by_year");
+   let chartInstance;
+
+   const renderData = (revData) => {
+      const { Targ_str, Goals, Limit, No_confirm, max_fall, min_rise, max_candles } = revData;
+
+      const h3Cont = document.querySelector(".cont_h3_buysell_reversal")
+      let absTarget = Math.abs(Targ_str);
+      let signTarget = (Targ_str < 0)? "Negative":"Positive";
+      h3Cont.innerHTML = `
+      <h3>Tendencias posteriores a rachas de ${absTarget} velas ${signTarget}.</h3>
+      <p>Con un limite de ${max_fall} y objetivo de ${min_rise} con ${max_candles} velas </p>
+      `;
+
+      // Limpieza previa
+      bodyTabRes.innerHTML = "";
+      contResults.innerHTML = "";
+
+      const contRes = `
+         <section class="section_results">
+            <span>Target Streak:</span>
+            <span>${Targ_str}</span>
+         </section>
+         <section class="section_results">
+            <span>Goals:</span>
+            <span>${Goals.length}</span>
+         </section>
+         <section class="section_results">
+            <span>Invalidate:</span>
+            <span>${Limit.length}</span>
+         </section>
+         <section class="section_results">
+            <span>No confirmation:</span>
+            <span>${No_confirm.length}</span>
+         </section>
+      `;
+      contResults.innerHTML = contRes;
+
+      const goalsByYear = {}, limitByYear = {}, noConfByYear = {};
+
+      for(const data of Goals){
+         const [fromDate, fromTime] = data.From.split("T");
+         const [toDate, toTime] = data.To.split("T");
+
+         const rowTab = `
+            <div class="row_tab_res">
+               <div class="cell_tab_res">${fromDate}</div>
+               <div class="cell_tab_res">${fromTime}</div>
+               <div class="cell_tab_res">${toDate}</div>
+               <div class="cell_tab_res">${toTime}</div>
+               <div class="cell_tab_res">${data.Open}</div>
+               <div class="cell_tab_res">${data.Close}</div>
+               <div class="cell_tab_res">${data.Result}</div>
+            </div>
+         `;
+         bodyTabRes.innerHTML += rowTab;
+
+         const year = fromDate.split("-")[0];
+         goalsByYear[year] = (goalsByYear[year] ?? 0) + 1;
+      }
+
+      for(const data of Limit){
+         const year = data.From.split("T")[0].split("-")[0];
+         limitByYear[year] = (limitByYear[year] ?? 0) + 1;
+      }
+
+      for(const data of No_confirm){
+         const year = data.From.split("T")[0].split("-")[0];
+         noConfByYear[year] = (noConfByYear[year] ?? 0) + 1;
+      }
+
+      const allYears = [...new Set([
+         ...Object.keys(goalsByYear),
+         ...Object.keys(limitByYear),
+         ...Object.keys(noConfByYear)
+      ])].sort();
+
+      const dataByYear = {
+         labels: allYears,
+         datasets: [
+         {
+            label: 'Goals',
+            data: allYears.map(y => goalsByYear[y] ?? 0),
+            backgroundColor: 'rgba(40, 167, 69, 0.7)'
+         }
+         ,{
+            label: 'Limit',
+            data: allYears.map(y => limitByYear[y] ?? 0),
+            backgroundColor: 'rgba(220, 53, 69, 0.7)'
+         },
+         {
+            label: 'No confirmation',
+            data: allYears.map(y => noConfByYear[y] ?? 0),
+            backgroundColor: "#3498db"
+         }
+
+         ]
+      };
+
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(canvas, {
+         type: 'bar',
+         data: dataByYear,
+         options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            scales: {
+               y: {
+                  beginAtZero: true
+               }
+            }
+         }
+      });
+
+      const sortedGoals = Object.entries(goalsByYear).sort((a,b) => b[1] - a[1]);
+
+      const bodyTabYears = document.querySelector(".body_tab_years");
+
+      bodyTabYears.innetHTML = '';
+      sortedGoals.forEach(data => {
+
+         let year = data[0];
+         let count = data[1];
+
+         const contentTabYears = `
+               <div class="row_tab_years">
+                  <input type="checkbox" name="op_year" value="${year}">
+                  <div>${year}</div>
+                  <div>${count}</div>
+               </div>
+         `;
+
+         bodyTabYears.innerHTML += contentTabYears;
+
+      });
+
+      btnYearSelec = document.querySelector(".btn_select_years");
+      const yearSelect = document.querySelectorAll('input[name="op_year"]');
+      const selectValue = Array.from(yearSelect).map(cb => cb.value);
+      const yearStr = selectValue.join(",");
+
+
+      btnYearSelec.addEventListener("click",()=>{
+         console.log("Years selecctedes");
+
+         console.log(selectValue);
+      })
+
+      document.addEventListener('change', e => {
+         console.log(yearStr)
+          if (e.target.matches('input[name="op_year"]')) {
+              const years = [...document.querySelectorAll('input[name="op_year"]:checked')]
+                            .map(cb => cb.value)
+                            .join(',');
+              const link   = document.getElementById('viewYears');
+              link.href    = years ? `${link.dataset.base}?years=${years}&allyears=${yearStr}&max_fall=${max_fall}&min_rise=${min_rise}&max_candles=${max_candles}`: link.dataset.base;
+          }
+
+         const viewlink = document.getElementById("viewYears")
+      });
+
+
+      
+
+
+   }
+
+   const fetchData = async (filterData = null) => {
+      const max_fall = 300;
+      const min_rise = 600;
+      const max_candles = 200;
+
+      const url = `/buysell/dynamic_reversal?max_fall=${max_fall}&min_rise=${min_rise}&max_candles=${max_candles}`;
+
+      const options = filterData
+         ? {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(filterData)
+         }
+         : { method: "GET" };
+
+      try {
+         const res = await fetch(url, options);
+         const data = await res.json();
+         renderData(data);
+      } catch (err) {
+         console.error("Error fetching data:", err);
+      }
+   }
+
+   btnAply.addEventListener("click", () => {
+      const data = {
+         start_date: fromDate.value,
+         end_date: toDate.value
+      };
+      fetchData(data);
+   });
+
+   // Carga inicial sin filtros
+   fetchData();
+</script>
+
+
+{% endblock %}

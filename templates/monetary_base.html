@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h1>Monetary Base Data</h1>
+
+<!-- M2 Chart -->
+<div style="width: 80vw; overflow-x: auto; border: 1px solid #ccc; padding: 1rem; margin-bottom: 2rem;">
+   <canvas id="chartM2" style="width: 700vw; height: 400px;"></canvas>
+</div>
+
+<!-- QE Chart -->
+<div style="width: 80vw; overflow-x: auto; border: 1px solid #ccc; padding: 1rem; margin-bottom: 2rem;">
+   <canvas id="chartQE" style="width: 300vw; height: 400px;"></canvas>
+</div>
+
+<!-- OHLC Candlestick Chart -->
+<div style="width: 80vw; overflow-x: auto; border: 1px solid #ccc; padding: 1rem;">
+   <canvas id="chartOHLC" style="width: 300vw; height: 400px;"></canvas>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/*
+ *  Trae los datos del backend y dibuja
+ *  los tres gráficos (M2, QE y velas semanales US30).
+ */
+const getDataFn = async () => {
+   const url = '/api/monetary_base';
+
+   const dataFetch = await fetch(url)
+      .then(res => res.json())
+      .catch(err => {
+         console.error("Error al obtener los datos:", err);
+         return {};
+      });
+
+   // === Registro de Chart.js ===
+   // El plugin financiero ya registró sus controladores automáticamente
+   // (candlestick / ohlc). Solo añadimos las escalas y elementos nativos
+   // que vamos a usar.
+   const { Chart } = window;
+   Chart.register(
+      Chart.TimeScale,
+      Chart.LinearScale,
+      Chart.CategoryScale,
+      Chart.BarElement,
+      Chart.Title,
+      Chart.Tooltip
+   );
+
+   // === M2 ===
+   const m2Labels = dataFetch.data_M2.map(row => row.observation_date);
+   const m2Values = dataFetch.data_M2.map(row => parseFloat(row.WM2NS));
+
+   new Chart(document.getElementById("chartM2").getContext("2d"), {
+      type: "bar",
+      data: {
+         labels: m2Labels,
+         datasets: [{
+            label: "M2 - WM2NS",
+            data: m2Values,
+            backgroundColor: "rgba(54, 162, 235, 0.6)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 1
+         }]
+      },
+      options: {
+         responsive: false,
+         maintainAspectRatio: false,
+         scales: {
+            x: { ticks: { maxRotation: 90, minRotation: 45 }},
+            y: { beginAtZero: false }
+         }
+      }
+   });
+
+   // === QE ===
+   const qeLabels = dataFetch.data_QE.map(row => row.Date);
+   const qeValues = dataFetch.data_QE.map(row => parseFloat(row["Total Assets"]));
+
+   new Chart(document.getElementById("chartQE").getContext("2d"), {
+      type: "bar",
+      data: {
+         labels: qeLabels,
+         datasets: [{
+            label: "Total Assets (QE)",
+            data: qeValues,
+            backgroundColor: "rgba(255, 159, 64, 0.6)",
+            borderColor: "rgba(255, 159, 64, 1)",
+            borderWidth: 1
+         }]
+      },
+      options: {
+         responsive: false,
+         maintainAspectRatio: false,
+         scales: {
+            x: { ticks: { maxRotation: 90, minRotation: 45 }},
+            y: { beginAtZero: false }
+         }
+      }
+   });
+
+
+   // === OHLC Candlestick ===
+   const ohlcData = dataFetch.data_ohlc.map(d => ({
+     x: new Date(d.x).getTime(), // ⬅️  ← timestamp numérico
+     o: d.o,
+     h: d.h,
+     l: d.l,
+     c: d.c
+   }));
+   
+   new Chart(document.getElementById("chartOHLC").getContext("2d"), {
+     type: "candlestick",
+     data: { datasets: [{ label: "US30 Weekly Candles", data: ohlcData,
+                          color: { up: "green", down: "red", unchanged: "gray" } }] },
+     options: {
+       responsive: false,
+       maintainAspectRatio: false,
+       scales: {
+         x: { type: "time", time: { unit: "week" } },
+         y: { title: { display: true, text: "Price" } }
+       }
+     }
+   });
+   
+
+
+
+};
+
+// Llamada inicial
+getDataFn();
+</script>
+{% endblock %}

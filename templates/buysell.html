@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<main class="main_buysell">
+   <div class="cont_hist_one">
+      <input type="date" id="date_from_one">
+      <canvas id="histograma_one" width="3000" height="580"></canvas>
+
+   </div>
+
+   <div class="cont_hist_streaks">
+      <canvas id="histograma_streaks"></canvas>
+   </div>
+</main>
+
+<script>
+   
+   const getDataBS = async () =>{
+      const results = await fetch("buysell/trend")
+      .then(res => res.json())
+      .then(res => res)
+      .catch(err => console.error(err))
+
+      console.log(results)
+
+      /* ----- Trends ---- */
+
+      const filterDate = results[0].filter(row => 
+         row.Date.split("-")[0] === "2015"
+      );
+      
+      const date = filterDate.map(row => row.Date);
+      const trend = filterDate.map(row => row.Trend);
+      
+      const backgroundColors = trend.map(value => value >= 0 ? "green" : "red");
+
+      /* ----- Streaks ---- */
+
+      const streaks = results[1];
+      // console.log(streaks)
+
+      /* ----- Elements HTML ---- */
+      
+      const histOne = document.getElementById("histograma_one");
+      const histStreaks = document.getElementById("histograma_streaks");
+
+      new Chart(histOne, {
+           type: 'bar',
+           data: {
+             labels: date,
+             datasets: [{
+               label: "Trend Daily",
+               data: trend,
+               backgroundColor: backgroundColors,
+             }]
+           },
+           options: {
+             responsive: false,
+             maintainAspectRatio: false,
+             scales: {
+               y: { beginAtZero: false },
+               x: {
+                 ticks: {
+                   maxRotation: 45,
+                   minRotation: 45
+                 }
+               }
+             }
+           }
+         });
+         
+         // -------------------------------------------------
+
+            new Chart(histStreaks,{
+               type:'bar',
+               data: {
+                  labels: date
+               }
+            })
+         // -------------------------------------------------
+         }
+      
+   getDataBS()
+</script>
+
+{% endblock %}

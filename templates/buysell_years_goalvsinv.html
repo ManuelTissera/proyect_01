@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+
+
+{% block body %}
+
+<h1>Goals vs Invalidated</h1>
+
+<main class="main_goals_vs_inv">
+   
+   <div class="container_data_gral">
+
+   </div>
+</main>
+
+<script>
+
+   const params = new URLSearchParams(window.location.search);
+   
+   const streakURL = params.get("streakURL");
+   console.log(streakURL)
+   const yearsURL = params.get("years");
+   const limitURL = params.get("limit");
+   const objecURL = params.get("objective");
+   const candlURL = params.get("candles");
+
+   console.log(yearsURL.split(","))
+
+   const containerDataGral = document.querySelector(".container_data_gral");
+   containerDataGral.innerHTML = `
+      <h4>Trends following streaks of ${streakURL} candles</h4>
+      <a href="{{ url_for('buysell_years_goalvsinv') }}?streakURL=${streakURL}&years=${yearsURL}&limit=${limitURL}&objective=${objecURL}&candles=${candlURL}">Goals Vs Ivalidates</a>
+      <p>Years Selected:${yearsURL} </p>
+      <p>Limit: ${limitURL} | Objective: ${objecURL} | Candles: ${candlURL}</p>
+   `;
+
+   const dataGoalInv = async () => {
+      const url = `/buysell/years_rsi?years=${yearsURL}&st=${streakURL}&max_fall=${limitURL}&min_rise=${objecURL}&max_candles=${candlURL}`;
+
+      const dataFetch = await fetch(url)
+         .then(res => res.json())
+         .then(res => res)
+         .catch(err => console.error(err));
+
+
+      renderCalc(dataFetch);
+
+
+   }
+
+
+   const containerTab = document.createElement("div");
+   containerTab.className = "container_tab_goalvsinv";
+
+   const renderCalc = (dataRev) => {
+      const orderedMonths = [
+         "01", "02", "03", "04", "05", "06",
+         "07", "08", "09", "10", "11", "12"
+      ];
+
+      const nameMonth = ['January',]
+      
+
+      let headerPrinted = false;
+
+      Object.entries(dataRev).forEach(data => {
+
+         const monthTab = document.createElement("div");
+         monthTab.className = "container_month_tab_goalvsinv";
+
+
+
+         const showHeader = !headerPrinted;
+         headerPrinted = true;
+
+
+         monthTab.innerHTML = `
+            <h2 class="h2_tab_goalvsinv">${data[0]}</h2>
+            <div class="block_tab_goalvsinv">
+               ${showHeader ? `
+                  <div class="header_month_tab_goalvsinv">
+                     <div></div>
+                     <div>Goals</div>
+                     <div>Inval</div>
+                  </div>` : ''}
+               <div class="body_month_tab_goalvsinv">
+
+               </div>
+            </div>
+         `;
+
+         let bodyMonthTab = monthTab.querySelector(".body_month_tab_goalvsinv");
+
+         orderedMonths.forEach(month => { 
+            let dataMonth = data[1].ByMonth[month];
+
+            const goalValues = orderedMonths.map(m => data[1].ByMonth[m].Goals);
+            const maxGoal = Math.max(...goalValues);
+
+            const intensity = maxGoal === 0 ? 0 : dataMonth.Goals / maxGoal;
+            const r = Math.floor(240 - 240 * intensity);
+            const g = Math.floor(255 - (255 - 128) * intensity);
+            const b = Math.floor(240 - 240 * intensity);
+            const background = `rgb(${r}, ${g}, ${b})`;
+
+            const rowMonthTab = `
+                  <div class="row_month_tab_goalvsinv">
+                     <div>${month}</div>
+                     <div style="background-color: ${background}">${dataMonth.Goals}</div>
+                     <div>${dataMonth.Invalidated}</div>
+                  </div>
+            `;
+
+            if(dataMonth.Goals >= 4){bodyMonthTab.innerHTML += rowMonthTab}
+
+         })
+         console.log('---------------')
+         
+
+         containerTab.appendChild(monthTab);
+      });
+
+   }
+
+
+   const main = document.querySelector(".main_goals_vs_inv");
+   main.appendChild(containerTab);
+
+   dataGoalInv();
+   
+</script>
+
+{% endblock %}

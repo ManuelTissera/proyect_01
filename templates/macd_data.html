@@ -1,0 +1,313 @@
+{% extends "layout.html" %}
+
+
+{% block body %}
+
+
+<h1>MACD Data</h1>
+
+<div class="blocks_macd_container"></div>
+
+<div class="container_macd_table">
+   <div class="row_macd_table h_row_one">
+      <div></div>
+      <div>MACD + </div>
+      <div>MACD - </div>
+   </div>
+
+   <div class="body_macd_table">
+      <div class="row_macd_table h_row_two">
+         <div></div>
+         <div>ObjectiveProfit</div>
+         <div>LimitLoss</div>
+         <div>NoResult</div>
+         <div>Total</div>
+      </div>
+
+   </div>
+</div>
+
+<div class="container_draw_rsi">
+   <canvas id="chartDrawRSI" width="400px" height="200px"></canvas>
+</div>
+
+<div class="container_table_date_macd">
+   <div class="header_table_date_macd">
+      <div></div>
+      <div>MACD -</div>
+      <div>MACD +</div>
+   </div>
+   <div class="first_row_table_date row_date_macd">
+      <div>Date</div>
+      <div>Lower</div>
+      <div>Higher</div>
+      <div>Lower</div>
+      <div>Higher</div>
+   </div>
+
+</div>
+
+<script>
+
+   // MACD_Hist = MACD - Signal
+   //         = -228.269589 - (-161.758408)
+   //         = -66.511181
+
+           
+
+
+   const getDataFn = async () => {
+      const url = '/api/macd_data';
+
+      const dataFetch = await fetch(url).then(res => res.json()).then(res => res).catch(err => console.error(err));
+
+      console.log(dataFetch);
+
+      const meanArr = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+      let rsiObject = {"NegLower":[], "NegHigher":[], "PosLower": [], "PosHigher":[]};
+
+      let NegativeHigherRSI = { "Profit":[], "Loss":[], "NoResult":[] };
+      let NegativeLowerRSI  = { "Profit":[], "Loss":[], "NoResult":[] };
+      let PositiveHigherRSI = { "Profit":[], "Loss":[], "NoResult":[] };
+      let PositiveLowerRSI  = { "Profit":[], "Loss":[], "NoResult":[] };
+         
+      // NUEVO: objeto para contar por año y categoría
+      let yearlyMACDCount = {
+         "Negative_Higher": {},
+         "Negative_Lower": {},
+         "Positive_Higher": {},
+         "Positive_Lower": {}
+      };
+      
+      Object.entries(dataFetch.PriceStreaks).forEach(data => {
+         const title = data[0];
+         let Loss = data[1].LimitLoss.map(v => v.RSI_14);
+         let Profit = data[1].ObjectiveProfit.map(v => v.RSI_14);
+         let No_result = data[1].NoResult.map(v => v.RSI_14);
+      
+         // === NUEVO: conteo por año ===
+         // ["LimitLoss", "ObjectiveProfit", "NoResult"].forEach(key => {
+         ["ObjectiveProfit"].forEach(key => {
+            data[1][key].forEach(obj => {
+               const year = obj.From.split("-")[0];
+               if (!yearlyMACDCount[title][year]) {
+                  yearlyMACDCount[title][year] = 1;
+               } else {
+                  yearlyMACDCount[title][year]++;
+               }
+            });
+         });
+      
+         if(title == 'Negative_Higher'){
+            NegativeHigherRSI.Loss.push(Loss);
+            NegativeHigherRSI.Profit.push(Profit);
+            NegativeHigherRSI.NoResult.push(No_result);
+            return;
+         } else if (title == 'Negative_Lower'){
+            NegativeLowerRSI.Loss.push(Loss);
+            NegativeLowerRSI.Profit.push(Profit);
+            NegativeLowerRSI.NoResult.push(No_result);
+            return;
+         } else if (title == 'Positive_Higher'){
+            PositiveHigherRSI.Loss.push(Loss);
+            PositiveHigherRSI.Profit.push(Profit);
+            PositiveHigherRSI.NoResult.push(No_result);
+            return;
+         } else if (title == 'Positive_Lower'){
+            PositiveLowerRSI.Loss.push(Loss);
+            PositiveLowerRSI.Profit.push(Profit);
+            PositiveLowerRSI.NoResult.push(No_result);
+            return;
+         }
+      });
+      
+
+      const meanMACDNeg = dataFetch.stats.mean_macd_neg;
+      const meanMACDPos = dataFetch.stats.mean_macd_pos;
+
+      let valueMeanNeg = { "Higher": [], "Lower": []};
+      let valueMeanPos = { "Higher": [], "Lower": []};
+
+      dataFetch.data.forEach( data => {
+         const macdData = data.MACD;
+
+         const rangeStd = 0;
+
+         if(macdData > meanMACDNeg && macdData < 0){
+            valueMeanNeg.Higher.push(macdData);
+         }else if(macdData < meanMACDNeg){
+            valueMeanNeg.Lower.push(macdData);
+         }else if(macdData > 0 && macdData < meanMACDPos){
+            valueMeanPos.Lower.push(macdData);
+         }else{
+            valueMeanPos.Higher.push(macdData);
+         }
+
+      })
+
+      const blocksMACDContainer = document.querySelector(".blocks_macd_container");
+
+      const bodyMACDTable = document.querySelector(".body_macd_table");
+
+      bodyMACDTable.innerHTML += `
+         <div class="row_macd_table b_row">
+            <div>Higher</div>
+            <div>${dataFetch.PriceStreaks.Positive_Higher.ObjectiveProfit.length}</div>
+            <div>${meanArr(PositiveHigherRSI.Profit[0]).toFixed(0)}</div>
+            <div>${dataFetch.PriceStreaks.Positive_Higher.LimitLoss.length}</div>
+            <div>${meanArr(PositiveHigherRSI.Loss[0]).toFixed(0)}</div>
+            <div>${dataFetch.PriceStreaks.Positive_Higher.NoResult.length}</div>
+            <div>${meanArr(PositiveHigherRSI.NoResult[0]).toFixed(0)}</div>
+            <div>${valueMeanPos.Higher.length}</div>
+            <div></div>
+         </div>
+         <div class="row_macd_table b_row">
+            <div>Lower</div>
+            <div>${dataFetch.PriceStreaks.Positive_Lower.ObjectiveProfit.length}</div>
+            <div>${meanArr(PositiveLowerRSI.Profit[0]).toFixed(0)}</div>
+            <div>${dataFetch.PriceStreaks.Positive_Lower.LimitLoss.length}</div>
+            <div>${meanArr(PositiveLowerRSI.Loss[0]).toFixed(0)}</div>
+            <div>${dataFetch.PriceStreaks.Positive_Lower.NoResult.length}</div>
+            <div>${meanArr(PositiveLowerRSI.NoResult[0]).toFixed(0)}</div>
+            <div>${valueMeanPos.Lower.length}</div>
+            <div></div>
+         </div>
+         <div class="row_macd_table b_row">
+            <div>Higher</div>
+            <div>${dataFetch.PriceStreaks.Negative_Higher.ObjectiveProfit.length}</div>
+            <div>${meanArr(NegativeHigherRSI.Profit[0]).toFixed(0)}</div>
+            <div>${dataFetch.PriceStreaks.Negative_Higher.LimitLoss.length}</div>
+            <div>${meanArr(NegativeHigherRSI.Loss[0]).toFixed(0)}</div>
+            <div>${dataFetch.PriceStreaks.Negative_Higher.NoResult.length}</div>
+            <div>${meanArr(NegativeHigherRSI.NoResult[0]).toFixed(0)}</div>
+            <div>${valueMeanNeg.Higher.length}</div>
+            <div></div>
+         </div>
+         <div class="row_macd_table b_row">
+            <div>Lower</div>
+            <div>${dataFetch.PriceStreaks.Negative_Lower.ObjectiveProfit.length}</div>
+            <div>${meanArr(NegativeLowerRSI.Profit[0]).toFixed(0)}</div>
+            <div>${dataFetch.PriceStreaks.Negative_Lower.LimitLoss.length}</div>
+            <div>${meanArr(NegativeLowerRSI.Loss[0]).toFixed(0)}</div>
+            <div>${dataFetch.PriceStreaks.Negative_Lower.NoResult.length}</div>
+            <div>${meanArr(NegativeLowerRSI.NoResult[0]).toFixed(0)}</div>
+            <div>${valueMeanNeg.Lower.length}</div>
+            <div></div>
+         </div>
+
+      `;
+
+
+      const ctx = document.getElementById('chartDrawRSI').getContext('2d');
+
+      const scatterDataset = (array, label, color) => {
+         return {
+            label: label,
+            data: array.map((val, idx) => ({ x: idx + 1, y: val })),
+            backgroundColor: color,
+            pointRadius: 3,
+            showLine: false
+         };
+      };
+
+      const profitData = NegativeLowerRSI.Profit[0] || [];
+      const lossData = NegativeLowerRSI.Loss[0] || [];
+      const noResultData = NegativeLowerRSI.NoResult[0] || [];
+
+      console.log(profitData)
+      // console.log(lossData)
+      // console.log(noResultData)
+
+
+      new Chart(ctx, {
+         type: 'scatter',
+         data: {
+            datasets: [
+               scatterDataset(profitData, 'Profit', '#27ae60'),
+               scatterDataset(lossData, 'Loss', '#c0392b'),
+               scatterDataset(noResultData, 'No Result', '#f1c40f')
+            ]
+         },
+         options: {
+            responsive: true,
+            scales: {
+               x: {
+                  title: { display: true, text: 'Index' },
+                  type: 'linear',
+                  position: 'bottom'
+               },
+               y: {
+                  title: { display: true, text: 'RSI Value' }
+               }
+            },
+            plugins: {
+               legend: { position: 'top' }
+            }
+         }
+      });
+
+
+
+      const containerTableMACDDate = document.querySelector(".container_table_date_macd");
+
+      let allYears = new Set();
+      Object.values(yearlyMACDCount).forEach(typeObj => {
+         Object.keys(typeObj).forEach(year => allYears.add(year));
+      });
+      let sortedYears = Array.from(allYears).sort();
+
+
+      sortedYears.forEach(year => {
+         const row = `
+            <div class="row_body_date_macd row_date_macd">
+               <div>${year}</div>
+               <div>${yearlyMACDCount.Negative_Lower[year] || 0}</div>
+               <div>${yearlyMACDCount.Negative_Higher[year] || 0}</div>
+               <div>${yearlyMACDCount.Positive_Lower[year] || 0}</div>
+               <div>${yearlyMACDCount.Positive_Higher[year] || 0}</div>
+            </div>
+         `;
+         containerTableMACDDate.innerHTML += row;
+      });
+
+
+
+      // console.log(dataFetch.StreaksMACD);
+
+      // let countYearLowerNeg = {}
+      // let countYearLowerPos = {}
+
+      // dataFetch.StreaksMACD.ObjectiveProfit.forEach(data => {
+      //    const year = data.From.split("-")[0];
+      //    countYearLowerNeg[year] = (countYearLowerNeg[year] || 0) + 1;
+      // })
+
+      
+
+      // console.log(countYearLowerNeg)
+
+      // let yearsStreakNeg = {}
+
+      // dataFetch.StreaksNegative.forEach(data => {
+      //    const year = data.From.split("-")[0];
+
+      //    yearsStreakNeg[year] = (yearsStreakNeg[year] || 0) +1;
+      // });
+
+      // console.log(yearsStreakNeg);
+
+
+   }
+
+   getDataFn()
+
+</script>
+
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='javascript/trends_percentage_freq_month.js') }}"></script>
+  <script src="{{ url_for('static', filename='javascript/trends_percentage_draws.js') }}"></script>
+{% endblock %}
+
+{% endblock %}

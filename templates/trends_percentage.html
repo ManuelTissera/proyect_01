@@ -1,0 +1,435 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h1>Percentage Trends</h1>
+
+<div class="container_detail_trend">
+</div>
+
+<h3 class="h3_tab_trend_data">PreSlope based data</h3>
+<div class="container_tab_trend_data block_one_data">
+</div>
+
+<h3 class="h3_tab_trend_data">Simple Media Average based data</h3>
+<div class="container_tab_trend_data block_two_data">
+</div>
+
+<div class="container_draw_trend_one">
+   <canvas id="chartPreslope" width="800" height="400"></canvas>
+</div>
+
+<div class="container_tab_trend_count">
+   <div class="header_tab_trend_count">
+      <div>Year</div>
+      <div>Count</div>
+      <div>Variation</div>
+      <div>Amplitude</div>
+   </div>
+   <div class="body_tab_trend_count">
+      <p>Loading...</p>
+   </div>
+</div>
+
+
+
+<script>
+const findTrends = async () => {
+   const targetURL = 600, limitURL = 250, candlesURL = 80;
+   const url = `buysell/bullish_percentage?target=${targetURL}&limit=${limitURL}&max_candles=${candlesURL}`;
+
+   try {
+      const res = await fetch(url);
+      const dataFetch = await res.json();
+      console.log(dataFetch);
+
+      let objCountYear = {};
+
+      dataFetch.Objective.forEach(data => {
+         let year = data.From.split("T")[0].split("-")[0];
+         let fromDate = data.From.split("T")[0];
+         let fromHour = data.From.split("T")[1];
+
+         if (!objCountYear[year]) {
+            objCountYear[year] = 1;
+         } else {
+            objCountYear[year]++;
+         }
+      });
+
+      const bodyTabCount = document.querySelector(".body_tab_trend_count");
+      const blockOneData = document.querySelector(".block_one_data");
+      const blockTwoData = document.querySelector(".block_two_data");
+      const contDetailTrend = document.querySelector(".container_detail_trend");
+
+      contDetailTrend.innerHTML = `
+         <span><b>Target:</b> ${targetURL}</span>
+         <span><b>Limit:</b> ${limitURL}</span>
+         <span><b>Max Candles:</b> ${candlesURL}</span>
+      `;
+
+      bodyTabCount.innerHTML = '';
+
+      Object.entries(objCountYear)
+         .sort((a,b) => b[1] - a[1])
+         .forEach(year => {
+            let yearData = dataFetch.OpenCloseByYear[year[0]];
+            let variation = ((yearData.Close - yearData.Open) / yearData.Open) * 100;
+            let amplitude = ((yearData.High - yearData.Low) / yearData.Low) * 100;
+
+            let row = `
+               <div class="row_tab_trend_count">
+                  <div>${year[0]}</div>
+                  <div>${year[1]}</div>
+                  <div>${variation.toFixed(2)}%</div>
+                  <div>${amplitude.toFixed(2)}</div>
+               </div>
+            `;
+            bodyTabCount.innerHTML += row;
+         });
+
+
+      // table trend bullish data
+
+      const limitData = dataFetch.Limit;
+      const objectiveData = dataFetch.Objective;
+
+      let preSlopeCount = { "LimitPos": [], "LimitNeg": [], "ObjPos": [], "ObjNeg": [] };
+      let preSlopeVolatyCount = { "LimitPos": [], "LimitNeg": [], "ObjPos": [], "ObjNeg": [] };
+      let preSlpSMA20Start = { "LimitPos": [], "LimitNeg": [], "ObjPos": [], "ObjNeg": [] };
+      let preSlpSMA200Start = { "LimitPos": [], "LimitNeg": [], "ObjPos": [], "ObjNeg": [] };
+      let preSlopeSMA20Count = { "LimitPos": [], "LimitNeg": [], "ObjPos": [], "ObjNeg": [] };
+      let preSlopeSMA200Count = { "LimitPos": [], "LimitNeg": [], "ObjPos": [], "ObjNeg": [] };
+      let volatyArr = { "Limit": [], "Objective": []};
+      let distSMA20StartArr = { "Limit": [], "Objective": []};
+      let distSMA200StartArr = { "Limit": [], "Objective": []};
+      let distSMA20arr = { "Limit": [], "Objective": []};
+      let distSMA200arr = { "Limit": [], "Objective": []};
+
+
+         
+      // --- PreSlope based data
+
+      limitData.forEach(lim => {
+         const slope = lim.PreSlope;
+         const vol = lim.PreVolatility;
+         const dist20 = lim.DistSMA20;
+         const dist200 = lim.DistSMA200;
+         const distStart20 = lim.DistStartSMA20;
+         const distStart200 = lim.DistStartSMA200;
+
+         if (slope == null) return;
+         if (slope >= 0) {
+            preSlopeCount.LimitPos.push(slope);
+            preSlopeVolatyCount.LimitPos.push(vol);
+            preSlopeSMA20Count.LimitPos.push(dist20);
+            preSlopeSMA200Count.LimitPos.push(dist200);
+            preSlpSMA20Start.LimitPos.push(distStart20);
+            preSlpSMA200Start.LimitPos.push(distStart200);
+
+         } else {
+            preSlopeCount.LimitNeg.push(slope);
+            preSlopeVolatyCount.LimitNeg.push(vol);
+            preSlopeSMA20Count.LimitNeg.push(dist20);
+            preSlopeSMA200Count.LimitNeg.push(dist200);
+            preSlpSMA20Start.LimitNeg.push(distStart20);
+            preSlpSMA200Start.LimitNeg.push(distStart200);
+         }
+
+         if (lim.PreVolatility != null) volatyArr.Limit.push(lim.PreVolatility);
+         if (lim.DistSMA20 != null) distSMA20arr.Limit.push(lim.DistSMA20);
+         if (lim.DistSMA200 != null) distSMA200arr.Limit.push(lim.DistSMA200);
+         if (lim.DistStartSMA20 != null) distSMA20StartArr.Limit.push(lim.DistStartSMA20);
+         if (lim.DistStartSMA200 != null) distSMA200StartArr.Limit.push(lim.DistStartSMA200);
+      });
+
+      objectiveData.forEach(obj => {
+         const slope = obj.PreSlope;
+         const vol = obj.PreVolatility;
+         const dist20 = obj.DistSMA20;
+         const dist200 = obj.DistSMA200;
+         const distStart20 = obj.DistStartSMA20;
+         const distStart200 = obj.DistStartSMA200;
+
+
+
+         if (slope == null) return;
+         if (slope >= 0) {
+            preSlopeCount.ObjPos.push(slope);
+            preSlopeVolatyCount.ObjPos.push(vol);
+            preSlopeSMA20Count.ObjPos.push(dist20);
+            preSlopeSMA200Count.ObjPos.push(dist200);
+            preSlpSMA20Start.ObjPos.push(distStart20);
+            preSlpSMA200Start.ObjPos.push(distStart200); 
+
+         } else {
+            preSlopeCount.ObjNeg.push(slope);
+            preSlopeVolatyCount.ObjNeg.push(vol);
+            preSlopeSMA20Count.ObjNeg.push(dist20);
+            preSlopeSMA200Count.ObjNeg.push(dist200);
+            preSlpSMA20Start.ObjNeg.push(distStart20);
+            preSlpSMA200Start.ObjNeg.push(distStart200);
+
+
+         }
+
+         if (obj.PreVolatility != null) volatyArr.Objective.push(obj.PreVolatility);
+         if (obj.DistSMA20 != null) distSMA20arr.Objective.push(obj.DistSMA20);
+         if (obj.DistSMA200 != null) distSMA200arr.Objective.push(obj.DistSMA200);
+         if (obj.DistStartSMA20 != null) distSMA20StartArr.Objective.push(obj.DistStartSMA20);
+         if (obj.DistStartSMA200 != null) distSMA200StartArr.Objective.push(obj.DistStartSMA200);
+
+
+      });
+
+
+      // --- SMAs based dataa
+
+
+
+
+
+
+
+      const meanArr = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+
+      //console.log(preSlopeSMA200Count.ObjNeg)
+      
+      console.log (distSMA20StartArr)
+      console.log (distSMA200StartArr)
+
+
+
+
+
+      let totalDataFetch = dataFetch.Objective.length + dataFetch.Limit.length + dataFetch.NoResult.length;
+
+            // ---- part General about preSlope
+      blockOneData.innerHTML += `
+            <div class="part_tab_trends part_one">
+               <div class="header_tab_bullish">
+                  <div>No Result</div>
+                  <div>Objective</div>
+                  <div>Limit</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>${dataFetch.NoResult.length}</div>
+                  <div>${dataFetch.Objective.length}</div>
+                  <div>${dataFetch.Limit.length}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>${(dataFetch.NoResult.length / totalDataFetch).toFixed(2) * 100}%</div>
+                  <div>${(dataFetch.Objective.length / totalDataFetch).toFixed(2) * 100}%</div>
+                  <div>${(dataFetch.Limit.length / totalDataFetch).toFixed(2) * 100}%</div>
+               </div>
+
+               <article class="article_part_bullish">PreSlope</article>
+
+               <div class="row_tab_bullish row_2">
+                  <div>Mean</div>
+                  <div>${(dataFetch.StatsPreSlope.Objective.mean).toFixed(2)}</div>
+                  <div>${(dataFetch.StatsPreSlope.Limit.mean).toFixed(2)}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Std</div>
+                  <div>${(dataFetch.StatsPreSlope.Objective.std).toFixed(2)}</div>
+                  <div>${(dataFetch.StatsPreSlope.Limit.std).toFixed(2)}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Count +</div>
+                  <div>${preSlopeCount.ObjPos.length}</div>
+                  <div>${preSlopeCount.LimitPos.length}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Count -</div>
+                  <div>${preSlopeCount.ObjNeg.length}</div>
+                  <div>${preSlopeCount.LimitNeg.length}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Mean +</div>
+                  <div>${meanArr(preSlopeCount.ObjPos).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeCount.LimitPos).toFixed(2)}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Mean -</div>
+                  <div>${meanArr(preSlopeCount.ObjNeg).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeCount.LimitNeg).toFixed(2)}</div>
+               </div>
+            </div>
+
+
+
+
+      `;
+
+            // ---- part Volatility about preSlope
+      blockOneData.innerHTML += `
+            <div class="part_tab_trends part_two">
+               <div class="header_tab_bullish">
+                  <div>Volatility</div>
+                  <div>Objective</div>
+                  <div>Limit</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Count</div>
+                  <div>${volatyArr.Objective.length}</div>
+                  <div>${volatyArr.Limit.length}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Mean</div>
+                  <div>${meanArr(volatyArr.Objective).toFixed(2)}</div>
+                  <div>${meanArr(volatyArr.Limit).toFixed(2)}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Mean +</div>
+                  <div>${meanArr(preSlopeVolatyCount.ObjPos).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeVolatyCount.LimitPos).toFixed(2)}</div>
+               </div>
+               <div class="row_tab_bullish row_2">
+                  <div>Mean -</div>
+                  <div>${meanArr(preSlopeVolatyCount.ObjNeg).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeVolatyCount.LimitNeg).toFixed(2)}</div>
+               </div>                             
+
+            </div>
+      `;
+
+            // ---- part SMAs about preSlope
+      blockOneData.innerHTML += `
+            <div class="part_tab_trends part_three">
+               <div class="header_tab_bullish row_6">
+                  <div>SMAs</div>
+                  <div>Objective</div>
+                  <div></div>
+                  <div></div>
+                  <div>Limit</div>
+                  <div></div>
+                  <div></div>
+               </div>
+               <div class="header_tab_bullish row_6">
+                  <div></div>
+                  <div>Start</div>
+                  <div>End</div>
+                  <div>Count</div>
+                  <div>Start</div>
+                  <div>End</div>
+                  <div>Count</div>
+               </div>
+
+               <article class="article_part_bullish art_row_6">PreSlope Mean SMAs</article>
+
+               <div class="row_tab_bullish row_6">
+                  <div style="font-size:13px">SMA 20 Slope +</div>
+                  <div>${meanArr(preSlpSMA20Start.ObjPos).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeSMA20Count.ObjPos).toFixed(2)}</div>
+                  <div>${preSlopeSMA20Count.ObjPos.length}</div>
+                  <div>${meanArr(preSlpSMA20Start.LimitPos).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeSMA20Count.LimitPos).toFixed(2)}</div>
+                  <div>${preSlopeSMA20Count.LimitPos.length}</div>
+               </div>
+               <div class="row_tab_bullish row_6">
+                  <div style="font-size:13px">SMA 200 Slope +</div>
+                  <div>${meanArr(preSlpSMA200Start.ObjPos).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeSMA200Count.ObjPos).toFixed(2)}</div>
+                  <div>${preSlopeSMA200Count.ObjPos.length}</div>
+                  <div>${meanArr(preSlpSMA200Start.LimitPos).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeSMA200Count.LimitPos).toFixed(2)}</div>
+                  <div>${preSlopeSMA200Count.LimitPos.length}</div>
+               </div>
+               
+
+               <div class="row_tab_bullish row_6">
+                  <div style="font-size:13px">SMA 20 Slope -</div>                     
+                  <div>${meanArr(preSlpSMA20Start.ObjNeg).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeSMA20Count.ObjNeg).toFixed(2)}</div>
+                  <div>${preSlopeSMA20Count.ObjNeg.length}</div>
+                  <div>${meanArr(preSlpSMA20Start.LimitNeg).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeSMA20Count.LimitNeg).toFixed(2)}</div>
+                  <div>${preSlopeSMA20Count.LimitNeg.length}</div>
+               </div>
+               <div class="row_tab_bullish row_6">
+                  <div style="font-size:13px">SMA 200 Slope -</div>                     
+                  <div>${meanArr(preSlpSMA200Start.ObjNeg).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeSMA200Count.ObjNeg).toFixed(2)}</div>
+                  <div>${preSlopeSMA200Count.ObjNeg.length}</div>
+                  <div>${meanArr(preSlpSMA200Start.LimitNeg).toFixed(2)}</div>
+                  <div>${meanArr(preSlopeSMA200Count.LimitNeg).toFixed(2)}</div>
+                  <div>${preSlopeSMA200Count.LimitNeg.length}</div>
+               </div>
+
+                           
+
+            </div>
+      `;
+
+      
+      // ========= BLOCK TOW BASED SMAs
+
+      blockTwoData.innerHTML += `
+            <div class="part_tab_trends part_one">
+                           <div class="header_tab_bullish row_6">
+                  <div>SMAs</div>
+                  <div>Objective</div>
+                  <div></div>
+                  <div></div>
+                  <div>Limit</div>
+                  <div></div>
+                  <div></div>
+               </div>
+               <div class="header_tab_bullish row_6">
+                  <div></div>
+                  <div>Start</div>
+                  <div>End</div>
+                  <div>Count</div>
+                  <div>Start</div>
+                  <div>End</div>
+                  <div>Count</div>
+               </div>
+
+               <div class="row_tab_bullish row_6">
+                  <div style="font-size:13px">Mean SMA 20</div>
+                  <div>${meanArr(distSMA20StartArr.Objective).toFixed(2)}</div>
+                  <div>${meanArr(distSMA20arr.Objective).toFixed(2)}</div>
+                  <div>${distSMA20arr.Objective.length}</div>
+                  <div>${meanArr(distSMA20StartArr.Limit).toFixed(2)}</div>
+                  <div>${meanArr(distSMA20arr.Limit).toFixed(2)}</div>
+                  <div>${distSMA20arr.Limit.length}</div>
+               </div>
+               <div class="row_tab_bullish row_6">
+                  <div style="font-size:13px">Mean SMA 200</div>                     
+                  <div>${meanArr(distSMA200StartArr.Objective).toFixed(2)}</div>
+                  <div>${meanArr(distSMA200arr.Objective).toFixed(2)}</div>
+                  <div>${distSMA200arr.Objective.length}</div>
+                  <div>${meanArr(distSMA200StartArr.Limit).toFixed(2)}</div>                  
+                  <div>${meanArr(distSMA200arr.Limit).toFixed(2)}</div>
+                  <div>${distSMA200arr.Limit.length}</div>
+               </div>
+            
+            </div>
+      `;
+
+
+
+
+
+
+
+
+
+   } catch (err) {
+      console.error("Error fetching bullish trends:", err);
+   }
+}
+
+findTrends();
+</script>
+
+
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='javascript/trends_percentage_freq_month.js') }}"></script>
+  <script src="{{ url_for('static', filename='javascript/trends_percentage_draws.js') }}"></script>
+{% endblock %}
+

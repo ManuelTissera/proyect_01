@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+<div class="stats-next-steps">
+
+   <h1>Study Outline</h1>
+
+  <h2>📊 Siguiente paso tras calcular la correlación</h2>
+
+  <h3>1. Confirmar visualmente las correlaciones</h3>
+  <p>
+    Revisar en el gráfico si las correlaciones se reflejan visualmente. Considerar agregar líneas de tendencia para analizar la relación entre variables como Variation y Drawup.
+  </p>
+
+  <h3>2. Aplicar regresión lineal simple</h3>
+  <p>
+    Usar regresión lineal para explorar relaciones entre pares de variables (por ejemplo, Variation vs Drawup o Amplitude vs Drawdown). Calcular R² y RMSE para medir el ajuste del modelo.
+  </p>
+
+  <h3>3. Evaluar independencia o multicolinealidad</h3>
+  <p>
+    Si se usan múltiples variables predictoras, verificar si hay correlación alta entre ellas. Esto se puede analizar con la matriz de covarianza o herramientas gráficas como scatterplot matrix.
+  </p>
+
+  <h3>4. Aplicar prueba de normalidad a los residuos</h3>
+  <p>
+    Luego de una regresión, verificar si los residuos siguen una distribución normal con pruebas como Shapiro-Wilk o mediante histogramas. Esto valida la calidad del modelo.
+  </p>
+
+  <h3>5. Probar transformaciones si es necesario</h3>
+  <p>
+    Si la relación entre variables no es lineal, aplicar transformaciones como log(x), sqrt(x) o x² para mejorar el ajuste del modelo.
+  </p>
+
+  <h3>6. Modelos de clasificación o predicción (más adelante)</h3>
+  <p>
+    Considerar usar regresión logística para variables binarias (por ejemplo, si un año terminó en positivo o no), o modelos de series de tiempo si se quiere capturar dependencia temporal.
+  </p>
+
+</div>
+
+
+
+{% endblock %}

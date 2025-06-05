@@ -1,0 +1,350 @@
+{% extends "layout.html" %}
+
+
+{% block body %}
+
+
+<h1>Statistics years whith RSI</h1>
+
+<div class="container_data_gral">
+
+</div>
+
+<div class="container_block_years"></div>
+
+<div class="container_draw_RSI">
+   <div class="container_data_draw_RSI"></div>
+   <canvas id="draw_RSIs" width="600" height="300"></canvas>
+</div>
+
+<div class="container_table_years_rsi">
+   <div class="header_table_years_rsi">
+      <div>Date-S</div>
+      <div>Hour-S</div>
+      <div>Date-E</div>
+      <div>Hour-E</div>
+      <div>Close</div>
+      <div>RSIs</div>
+      <div>Bar</div>
+   </div>
+   <div class="body_table_years_rsi">
+
+   </div>
+</div>
+
+<script>
+
+   const params = new URLSearchParams(window.location.search);
+   
+   const streakURL = params.get("streakURL");
+   console.log(streakURL)
+   const yearsURL = params.get("years");
+   const limitURL = params.get("limit");
+   const objecURL = params.get("objective");
+   const candlURL = params.get("candles");
+
+   const allRSI = [];
+   const confirmedRSI = [];
+   const limitRSI = [];
+
+   const containerDataGral = document.querySelector(".container_data_gral");
+   containerDataGral.innerHTML = `
+      <h4>Trends following streaks of ${streakURL} candles</h4>
+      <p>Years Selected:${yearsURL}</p>
+      <p>Limit: ${limitURL} | Objective: ${objecURL} | Candles: ${candlURL}</p>
+   `;
+
+   const containerBlockYears = document.querySelector(".container_block_years");
+
+   const dataYearRsiFn = async () => {
+      const url = `/buysell/years_rsi?years=${yearsURL}&st=${streakURL}&max_fall=${limitURL}&min_rise=${objecURL}&max_candles=${candlURL}`;
+
+      const dataFetch = await fetch(url)
+         .then(res => res.json())
+         .then(res => res)
+         .catch(err => console.error(err));
+
+      console.log(dataFetch);
+
+      Object.entries(dataFetch).forEach(year => {
+         renderBlockFn(year[0],year[1]);
+         
+         // console.log('-------------------------------')
+      })
+
+
+      
+
+// Calcular estadísticas de allRSI (para las líneas del gráfico)
+const meanAll = allRSI.reduce((a, b) => a + b, 0) / allRSI.length;
+const stdAll = Math.sqrt(allRSI.reduce((acc, val) => acc + Math.pow(val - meanAll, 2), 0) / allRSI.length);
+
+// Preparar puntos
+const confirmedPoints = [...confirmedRSI].sort((a, b) => a - b).map((v, i) => ({ x: i + 1, y: v }));
+const limitPoints = [...limitRSI].sort((a, b) => a - b).map((v, i) => ({ x: i + 1, y: v }));
+
+// Gráfico
+const ctx = document.getElementById("draw_RSIs").getContext("2d");
+
+new Chart(ctx, {
+  type: 'scatter',
+  data: {
+    datasets: [
+      {
+        label: 'Confirmed RSI',
+        data: confirmedPoints,
+        backgroundColor: 'blue',
+        pointRadius: 4,
+        pointHoverRadius: 5,
+        showLine: false
+      },
+      {
+        label: 'Limit RSI',
+        data: limitPoints,
+        backgroundColor: 'gray',
+        pointRadius: 4,
+        pointHoverRadius: 5,
+        showLine: false
+      },
+      {
+        label: 'Media RSI (all)',
+        data: [{ x: 1, y: meanAll }, { x: allRSI.length, y: meanAll }],
+        borderColor: 'green',
+        borderWidth: 1,
+        pointRadius: 0,
+        type: 'line',
+        fill: false
+      },
+      {
+        label: 'Media + STD (all)',
+        data: [{ x: 1, y: meanAll + stdAll }, { x: allRSI.length, y: meanAll + stdAll }],
+        borderColor: 'orange',
+        borderWidth: 1,
+        pointRadius: 0,
+        type: 'line',
+        fill: false
+      },
+      {
+        label: 'Media - STD (all)',
+        data: [{ x: 1, y: meanAll - stdAll }, { x: allRSI.length, y: meanAll - stdAll }],
+        borderColor: 'red',
+        borderWidth: 1,
+        pointRadius: 0,
+        type: 'line',
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: {
+        type: 'linear',
+        title: { display: true, text: 'Índice ordenado' }
+      },
+      y: {
+        title: { display: true, text: 'RSI' }
+      }
+    }
+  }
+});
+
+
+
+
+      const aboveStdConf = [], rangeStdConf = [], belowStdConf = [];
+
+
+      confirmedRSI.forEach(val => {
+        if (val < (meanAll - stdAll)) {
+          belowStdConf.push(val);
+        } else if (val > (meanAll + stdAll)) {
+          aboveStdConf.push(val);
+        } else {
+          rangeStdConf.push(val);
+        }
+
+      });
+
+
+      const valSoldRSI = 50;
+      const valBougRSI = 50;
+      const confirmedRSIL = confirmedRSI.length;
+      const limitRSIL = limitRSI.length;
+      let overSoldConf = 0, overBoughtConf = 0, neutroResConf = 0;
+      let overSoldLim = 0, overBoughtLim = 0, neutroResLim = 0;
+
+      confirmedRSI.forEach(val => {
+         
+         if(val < valSoldRSI){
+            overSoldConf++
+         }else if (val > valBougRSI){
+            overBoughtConf++
+         }else{
+            neutroResConf++
+         }
+      })
+
+      limitRSI.forEach(val => {
+         if(val < valSoldRSI){
+            overSoldLim++
+         }else if (val > valBougRSI){
+            overBoughtLim++
+         }else{
+            neutroResLim++
+         }
+      })
+
+
+      let overSoldConfPer = (overSoldConf/confirmedRSIL)*100, overBoughtConfPer = (overBoughtConf/confirmedRSIL)*100, neutroResConfPer = (neutroResConf/confirmedRSIL)*100;
+      let overSoldLimPer = (overSoldLim/limitRSIL)*100, overBoughtLimPer = (overBoughtLim/limitRSIL)*100, neutroResLimPer = (neutroResLim/limitRSIL)*100;
+
+      const containerDataDrawRSI = document.querySelector(".container_data_draw_RSI");
+      containerDataDrawRSI.innerHTML = `
+      <div>meanAll: ${meanAll.toFixed(0)} | Std: ${stdAll.toFixed(0)} | Std Pos: ${(meanAll + stdAll).toFixed(0)} | Std Neg: ${(meanAll - stdAll).toFixed(0)}</div>
+      <div>rangeStdConf: ${rangeStdConf.length}</div>
+      <div>aboveStdConf: ${aboveStdConf.length} | belowStdConf: ${belowStdConf.length}</div>
+      <span>Values Pro Fit</span>
+      <div>OverSold: ${overSoldConf} | OverBought: ${overBoughtConf} | Neutro: ${neutroResConf}</div>
+      <div>OverSold: ${overSoldConfPer.toFixed(0)} % | OverBought: ${overBoughtConfPer.toFixed(0)} % | Neutro: ${neutroResConfPer.toFixed(0)} %</div>
+      <span>Values Stop Loss</span>
+      <div>OverSold: ${overSoldLim} | OverBought: ${overBoughtLim} | Neutro: ${neutroResLim}</div>
+      <div>OverSold: ${overSoldLimPer.toFixed(0)} % | OverBought: ${overBoughtLimPer.toFixed(0)} % | Neutro: ${neutroResLimPer.toFixed(0)} %</div>
+      `;
+
+
+   };
+
+
+   const renderBlockFn = (year,revData) => {
+
+      const { Targ_str, ByMonth, ByQuarter, Goals, Limit, No_confirm, StreaksSummary} = revData;
+
+      // console.log(year)
+      // console.log('Byonth',ByMonth);
+      // console.log('ByQuarter',ByQuarter);
+      // console.log('Goals',Goals);
+      // console.log('Limit',Limit);
+      // console.log('NoConfirm',No_confirm);
+      // console.log(StreaksSummary);
+
+      const orderedMonths = [
+         "01", "02", "03", "04", "05", "06",
+         "07", "08", "09", "10", "11", "12"
+      ];
+
+      const goalValues = orderedMonths.map(m => ByMonth[m].Goals);
+      const maxGoal = Math.max(...goalValues);
+
+      const container = document.createElement("div");
+      container.className = "container_year_block";
+
+      const h2 = document.createElement("h2");
+      h2.className = "h2_table_one_years";
+      h2.innerText = `Year ${year}`;
+      container.appendChild(h2);
+
+      const resumen = document.createElement("div");
+      resumen.className = "container_tab_results_years";
+      resumen.innerHTML = `
+         <section class="section_results"><span>Target Streak:</span><span>${Targ_str}</span></section>
+         <section class="section_results"><span>Goals:</span><span>${Goals.length}</span></section>
+         <section class="section_results"><span>Invalidate:</span><span>${Limit.length}</span></section>
+         <section class="section_results"><span>No confirmation:</span><span>${No_confirm.length}</span></section>
+      `;
+      container.appendChild(resumen);
+
+      const quarterContainer = document.createElement("div");
+      quarterContainer.className = "container_tab_quarter_years";
+      quarterContainer.innerHTML = `
+         <div class="first_tab_quarter_years">
+            <div>Quarters</div>
+            <div>Goals</div>
+            <div>Invalidate</div>
+            <div>No Confirm</div>
+         </div>
+         ${["Q1", "Q2", "Q3", "Q4"].map(q => `
+            <div class="column_tab_quarter_years">
+               <div class="header_tab_quarter_years">${q}</div>
+               <div>${ByQuarter[q].Goals}</div>
+               <div>${ByQuarter[q].Invalidated}</div>
+               <div>${ByQuarter[q].NoConfirmation}</div>
+            </div>
+         `).join("")}
+      `;
+      container.appendChild(quarterContainer);
+
+      const monthContainer = document.createElement("div");
+      monthContainer.className = "container_tab_month_years";
+      monthContainer.innerHTML = `
+         <div class="first_tab_month_years">
+            <div>Month</div>
+            <div>Goals</div>
+            <div>Invalidated</div>
+            <div>No Confirm</div>
+         </div>
+      `;
+
+      orderedMonths.forEach(month => {
+         const data = ByMonth[month];
+         const intensity = maxGoal === 0 ? 0 : data.Goals / maxGoal;
+         const r = Math.floor(240 - 240 * intensity);
+         const g = Math.floor(255 - (255 - 128) * intensity);
+         const b = Math.floor(240 - 240 * intensity);
+         const background = `rgb(${r}, ${g}, ${b})`;
+
+         const col = document.createElement("div");
+         col.className = "column_tab_month_years";
+         col.innerHTML = `
+            <div class="header_tab_month_years">${month}</div>
+            <div style="background-color: ${background}">${data.Goals}</div>
+            <div>${data.Invalidated}</div>
+            <div>${data.NoConfirmation}</div>
+         `;
+         monthContainer.appendChild(col);
+      });
+
+      container.appendChild(monthContainer);
+      containerBlockYears.appendChild(container); 
+
+      // ---- table control -----
+
+      const containerTable = document.querySelector(".body_table_years_rsi");
+      
+      StreaksSummary.forEach(strSum => {
+
+         strSum.RSIs.forEach(r => allRSI.push(Number(r.toFixed(0))))
+
+         const stringRSI = strSum.RSIs.map(val => `[${val.toFixed(0)}]`)
+         if(strSum.Result == 'Confirmed'){
+
+            strSum.RSIs.forEach(r => confirmedRSI.push(Number(r.toFixed(0))));
+
+            containerTable.innerHTML += `
+               <div class="row_table_year_rsi">
+                  <div>${strSum.Start.split("T")[0]}</div>
+                  <div>${strSum.Start.split("T")[0]}</div>
+                  <div>${strSum.Start.split("T")[0]}</div>
+                  <div>${strSum.Start.split("T")[0]}</div>
+                  <div>${strSum.Close}</div>
+                  <div>${stringRSI.join(' - ')} = ${strSum.MeanRSI.toFixed(0)}</div>
+                  <div><div style="width: calc(${strSum.MeanRSI * 2}px); background-color: #a93226;">#</div></div>
+                  
+               </div>
+            `;
+         }else if(strSum.Result == "Invalidated"){
+            strSum.RSIs.forEach(r => limitRSI.push(Number(r.toFixed(0))));
+         };
+
+      });
+
+   };
+
+
+
+   dataYearRsiFn()
+
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+<h1>Historic Data</h1>
+
+<main class="main_historic">
+
+
+   <div class="container_draw_hist">
+      <div class="container_btn_draw_hist">
+         <span class="btn_draw btn_amplit">Amplitude</span>
+         <span class="btn_draw btn_var">Variation</span>
+         <span class="btn_draw btn_up">Drawup</span>
+         <span class="btn_draw btn_down">Drawdown</span>
+      </div>
+
+      <div class="tab_corr_cov_historic">
+         <div class="header_corr_cov_historic">
+            <div></div>
+            <div>Amp-Var</div>
+            <div>Amp-Up</div>
+            <div>Amp-Down</div>
+            <div>Var-Up</div>
+            <div>Var-Down</div>
+            <div>Up-Down</div>
+         </div>
+
+      </div>
+
+      <div class="container_tab_resgression">
+         <div class="header_tab_regression">
+            <div>Pair</div>
+            <div>R²</div>
+            <div>R² sqrt</div>
+            <div>R² log</div>
+         </div>
+      </div>
+      <canvas id="historicChart" width="1000" height="400"></canvas>
+   </div>
+
+
+
+   <div class="container_tab_hist">
+      <div class="header_tab_hist">
+         <div>Year</div>
+         <div>Open</div>
+         <div>Close</div>
+         <div>High</div>
+         <div>Low</div>
+         <div>Mean</div>
+         <div>Variation</div>
+         <div>Amplitude</div>
+         <div>Drawup</div>
+         <div>Drawdown</div>
+      </div>
+      <div class="body_tab_hist">
+
+      </div>
+   </div>
+</main>
+
+<script>
+   const historicDataFn = async () => {
+
+      let url = '/historic_data/US30_year'
+
+      const dataFetch = await fetch(url).then(res => res.json()).then(res => res).catch(err => console.error(err));
+
+      console.log(dataFetch)
+
+      dataFetch.data_df.forEach(data => {
+
+
+         const bodyTabHist = document.querySelector(".body_tab_hist");
+         let row = `
+            <div class="row_tab_hist">
+               <div>${data.Year}</div>
+               <div>${data.Open}</div>
+               <div>${data.Close}</div>
+               <div>${data.High}</div>
+               <div>${data.Low}</div>
+               <div>${data.Mean}</div>
+               <div>${((data.Variation) * 100).toFixed(2)}%</div>
+               <div>${((data.Amplitude) * 100).toFixed(2)}%</div>
+               <div>${((data.Drawup) * 100).toFixed(2)}%</div>
+               <div>${((data.Drawdown) * 100).toFixed(2)}%</div>
+            </div>
+         `;
+
+         bodyTabHist.innerHTML += row;
+      })
+
+      const btn_amplit = document.querySelector(".btn_amplit");
+      const btn_var = document.querySelector(".btn_var");
+      const btn_up = document.querySelector(".btn_up");
+      const btn_down = document.querySelector(".btn_down");
+
+      btn_amplit.addEventListener("click", () => {
+        historicChart.data.datasets[0].hidden = !historicChart.data.datasets[0].hidden;
+        historicChart.update();
+      });
+      
+      btn_var.addEventListener("click", () => {
+        historicChart.data.datasets[1].hidden = !historicChart.data.datasets[1].hidden;
+        historicChart.update();
+      });
+      
+      btn_up.addEventListener("click", () => {
+        historicChart.data.datasets[2].hidden = !historicChart.data.datasets[2].hidden;
+        historicChart.update();
+      });
+      
+      btn_down.addEventListener("click", () => {
+        historicChart.data.datasets[3].hidden = !historicChart.data.datasets[3].hidden;
+        historicChart.update();
+      });
+
+
+      const years = dataFetch.data_df.map(row => row.Year);
+      const amplitude = dataFetch.data_df.map(row => row.Amplitude);
+      const variation = dataFetch.data_df.map(row => row.Variation);
+      const drawup = dataFetch.data_df.map(row => (row.Drawup));
+      const drawdown = dataFetch.data_df.map(row => row.Drawdown);
+
+
+      const ctx = document.getElementById('historicChart').getContext('2d');
+
+      const historicChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: 'Amplitude',
+              data: amplitude,
+              borderColor: 'blue',
+              fill: false,
+              hidden: false
+            },
+            {
+              label: 'Variation',
+              data: variation,
+              borderColor: 'green',
+              fill: false,
+              hidden: false
+            },
+            {
+              label: 'Drawup',
+              data: drawup,
+              borderColor: 'orange',
+              fill: false,
+              hidden: false
+            },
+            {
+              label: 'Drawdown',
+              data: drawdown,
+              borderColor: 'red',
+              fill: false,
+              hidden: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Year'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Valores (%)'
+              }
+            }
+          }
+        }
+      });
+
+
+      const tabCorrCov = document.querySelector(".tab_corr_cov_historic");
+
+      const rowCorrCov = `
+         <div class="row_corr_cov_historic">
+            <div>Correlation</div>
+            <div>${dataFetch.correlation.amp_var.toFixed(3)}</div>
+            <div>${dataFetch.correlation.amp_up.toFixed(3)}</div>
+            <div>${dataFetch.correlation.amp_down.toFixed(3)}</div>
+            <div>${dataFetch.correlation.var_up.toFixed(3)}</div>
+            <div>${dataFetch.correlation.var_down.toFixed(3)}</div>
+            <div>${dataFetch.correlation.up_down.toFixed(3)}</div>
+         </div>
+         <div class="row_corr_cov_historic">
+            <div>Covariance</div>
+            <div>${dataFetch.covariance.amp_var.toFixed(3)}</div>
+            <div>${dataFetch.covariance.amp_up.toFixed(3)}</div>
+            <div>${dataFetch.covariance.amp_down.toFixed(3)}</div>
+            <div>${dataFetch.covariance.var_up.toFixed(3)}</div>
+            <div>${dataFetch.covariance.var_down.toFixed(3)}</div>
+            <div>${dataFetch.covariance.up_down.toFixed(3)}</div>
+         </div>
+      `;
+
+
+      const contTabReg = document.querySelector(".container_tab_resgression");
+      dataFetch.regression.forEach(reg => {
+        console.log(reg)
+
+        
+        const rowReg = `
+              <div class="row_tab_regression">
+                <div>${reg.Measures}</div>
+                <div>${reg.R2}</div>
+                <div>${reg.R2_sqrt}</div>
+                <div>${reg.R2_log}</div>
+              </div>
+        `;
+
+        contTabReg.innerHTML += rowReg;
+      })
+
+
+
+
+
+
+      tabCorrCov.innerHTML += rowCorrCov; 
+
+
+
+
+
+
+
+
+   };
+
+   historicDataFn()
+
+</script>
+
+
+{% endblock %}
+
+
+

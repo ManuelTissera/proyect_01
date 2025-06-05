@@ -1,0 +1,53 @@
+
+/* 
+
+:root{
+   background-color: #283747;
+   background-color: #2e4053;
+   background-color: #5d6d7e;
+   background-color: #a04000;
+   background-color: #d35400;
+   background-color: #ecf0f1;
+   background-color: #283747;
+} */
+
+
+
+.container_tab_goalvsinv{
+   border: .2rem solid #5d6d7e;
+   width: max-content;
+}
+
+.h2_tab_goalvsinv{
+   padding: .2rem;
+   margin: 0;
+}
+.container_month_tab_goalvsinv{
+   display: flex;
+   border-bottom: .1rem solid #5d6d7e;
+   width: max-content;
+}
+
+.header_month_tab_goalvsinv, .row_month_tab_goalvsinv{
+   display: grid;
+   grid-template-columns: 2rem repeat(2,3rem);
+   text-align:center;
+
+}
+
+.header_month_tab_goalvsinv{
+   background-color: #5d6d7e;
+   color: #ecf0f1;
+}
+
+.row_month_tab_goalvsinv div { 
+   border-left: .1rem solid #5d6d7e;
+   border-bottom: .1rem solid #5d6d7e;
+   padding: .2rem;
+
+}
+
+/* .row_month_tab_goalvsinv div:nth-child(3){
+   border-right: .1rem solid #5d6d7e;
+} */
+

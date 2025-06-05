@@ -1,0 +1,74 @@
+
+
+.main_sma_manual_range{
+   height: 80vh;
+   width: 90vw;
+}
+
+.main_sma_manual_range .block_one{
+   display: flex;
+}
+
+/* ----- TABLE STATISTIC OBJECTIVES ----*/
+
+.container_stat_obj{
+   margin-bottom: 1rem;
+}
+
+.grid_stats_obj{
+   display: grid;
+   grid-template-columns: repeat(6,4rem);
+}
+
+.grid_stats_obj div{
+   padding: .1rem .2rem;
+}
+
+.grid_stats_obj div:nth-child(odd){
+   background-color: #283747;
+   color: #fff;
+}
+
+.grid_stats_obj div{
+   border: .1rem solid #283747;
+}
+
+
+/* ------ TABLE LISTA OBJETIVES ------- */
+
+.container_list_obj{
+   display: inline-block;
+}
+
+.head_tab_list_obj, .row_tab_list_obj{
+   display: grid;
+   grid-template-columns: 7rem repeat(3,5rem);
+}
+
+.head_tab_list_obj{
+   border: .1rem solid #2e4053;
+   text-align: center;
+   width: max-content;
+}
+
+.row_tab_list_obj{
+   text-align: center;
+   border-bottom: .1rem solid #2e4053;
+   border-left: .1rem solid #2e4053;
+   border-right: .1rem solid #2e4053;
+   padding: .2rem 0rem;
+   width: max-content;
+}
+
+/* ------ CANVAS ONE ------ */
+
+.container_canvas_one{
+   border: .1rem solid #283747;
+   height: max-content;
+}
+
+.container_canvas_one h4{
+   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+   margin: .5rem 0rem;
+   text-align: center;
+}
