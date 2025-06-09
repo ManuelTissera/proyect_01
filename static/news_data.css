@@ -1,0 +1,28 @@
+
+
+.container_table_news{
+   margin-top: 2rem;
+   margin-left: 3rem;
+}
+
+.header_table_news,.row_table_news{
+   display: grid;
+   grid-template-columns: 7rem 5rem 20rem 5rem repeat(3,5rem);
+}
+
+.header_table_news div{
+   background-color: #34495e;
+   color: #fff;
+   text-align: center;
+   height: 2.5rem;
+   line-height: 2.5rem;
+}
+
+.row_table_news div{
+   text-align: center;
+   border-bottom: .1rem solid #333;
+   height: 2rem;
+   line-height: 2rem;
+}
+
+

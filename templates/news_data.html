@@ -5,16 +5,91 @@
 
 <h1>News Data</h1>
 
+<div class="container_select_news_name">
+   <select name="news_name" id="id_news_name">
+      <option value="">Select News</option>
+   </select>
+   <button class="btn-select-news-name">See News</button>
+</div>
+
+<div class="container_table_news">
+   <div class="header_table_news">
+      <div>Date</div>
+      <div>Hour</div>
+      <div>Name</div>
+      <div>Freq</div>
+      <div>Actual</div>
+      <div>Expect</div>
+      <div>Prev</div>
+   </div>
+   <div class="body_table_news">
+
+   </div>
+</div>
+
 
 <script>
 
    const viewDataFn = async () =>{
 
-      const url = '/api/economic-news';
+      const url = '/api/news_name_data';
 
       const dataFetch = await fetch(url).then(res => res.json()).then(res => res).catch(err => console.error(err));
       
       console.log(dataFetch);
+
+      const selectNewsName = document.getElementById('id_news_name');
+      const btnAplyNewsName = document.querySelector(".btn-select-news-name");
+
+      dataFetch.news_name.forEach( data => {
+         let name = data.new_name;
+         let id_new_name = data.id_new_name;
+
+         const optionNewsName = `
+            <option value="${id_new_name}">${name}</option>
+         `;
+
+         selectNewsName.innerHTML += optionNewsName;
+      });
+
+      const bodyTableNews = document.querySelector(".body_table_news");
+
+      btnAplyNewsName.addEventListener('click', async () => {
+         bodyTableNews.innerHTML = '';
+
+         let nameNews = selectNewsName.options[selectNewsName.selectedIndex];
+         const url_news_data = `/api/news_data_${selectNewsName.value}`;
+
+         const newsData = await fetch(url_news_data).then(res => res.json()).then(res => res).catch(err => console.error(err));
+         console.log(newsData);
+
+         newsData.forEach( data => {
+            let actual = data.actual_value;
+            let expect = data.expected_value;
+            let previo = data.previous_value;
+            let date = data.publication_date;
+            let hour = data.publication_time;
+            let freq = data.frequency;
+
+            let row = `
+                     <div class="row_table_news">
+                        <div>${date}</div>
+                        <div>${hour}</div>
+                        <div>${nameNews.text}</div>
+                        <div>${freq}</div>
+                        <div>${actual}</div>
+                        <div>${expect}</div>
+                        <div>${previo}</div>
+                     </div>
+            `;
+
+            bodyTableNews.innerHTML += row;
+
+         });
+
+         console.log(selectNewsName.value);
+      })
+
 
    }
 

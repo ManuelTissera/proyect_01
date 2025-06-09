@@ -3,20 +3,26 @@
 {% block body %}
 <h1>Monetary Base Data</h1>
 
-<!-- M2 Chart -->
-<div style="width: 80vw; overflow-x: auto; border: 1px solid #ccc; padding: 1rem; margin-bottom: 2rem;">
-   <canvas id="chartM2" style="width: 700vw; height: 400px;"></canvas>
+
+<!-- OHLC Candlestick Chart -->
+<div style="width: 95vw; overflow-x: auto; border: 1px solid #ccc; padding: 1rem;">
+   <canvas id="chartOHLC" style="width: 90vw; height: 400px;"></canvas>
 </div>
+
+
+<!-- M2 Chart -->
+<div style="width: 95vw; overflow-x: auto; border: 1px solid #ccc; padding: 1rem; margin-bottom: 2rem;">
+   <canvas id="chartM2" style="width: 90vw; height: 400px;"></canvas>
+</div>
+
+
 
 <!-- QE Chart -->
 <div style="width: 80vw; overflow-x: auto; border: 1px solid #ccc; padding: 1rem; margin-bottom: 2rem;">
    <canvas id="chartQE" style="width: 300vw; height: 400px;"></canvas>
 </div>
 
-<!-- OHLC Candlestick Chart -->
-<div style="width: 80vw; overflow-x: auto; border: 1px solid #ccc; padding: 1rem;">
-   <canvas id="chartOHLC" style="width: 300vw; height: 400px;"></canvas>
-</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -49,8 +55,10 @@ const getDataFn = async () => {
       Chart.Tooltip
    );
 
+
    // === M2 ===
-   const m2Labels = dataFetch.data_M2.map(row => row.observation_date);
+
+   const m2Labels = dataFetch.data_M2.map(row => row.Date.split("00")[0]);
    const m2Values = dataFetch.data_M2.map(row => parseFloat(row.WM2NS));
 
    new Chart(document.getElementById("chartM2").getContext("2d"), {
@@ -74,6 +82,7 @@ const getDataFn = async () => {
          }
       }
    });
+
 
    // === QE ===
    const qeLabels = dataFetch.data_QE.map(row => row.Date);
