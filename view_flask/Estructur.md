@@ -15,6 +15,7 @@
 │   ├── news_data/
 │   │   ├── __pycache__/
 │   │   ├── news_data.py
+│   │   ├── news_data_sql.py
 │   ├── SMAs/
 │   │   ├── __pycache__/
 │   │   ├── SMA_edit.py
@@ -49,6 +50,7 @@
 │   ├── USSPX500_M5.csv
 │   ├── USSPX500_M15.csv
 ├── Datasets_info/
+│   ├── data_info_news.json
 │   ├── QE_Data.csv
 │   ├── QE_Data.xlsx
 │   ├── WM2NS.csv
@@ -65,6 +67,7 @@
 │   ├── javascript/
 │   ├── macd_data.css
 │   ├── main_goal_vs_inv.css
+│   ├── news_data.css
 │   ├── sma_style.css
 │   ├── style.css
 │   ├── trends_percentage.css
@@ -91,3 +94,4 @@
 │   ├── Estructur.mp
 ├── app.py
 ├── Figure_1.png
+├── db_connection.py

@@ -7,7 +7,7 @@
 
 .header_table_news,.row_table_news{
    display: grid;
-   grid-template-columns: 7rem 5rem 20rem 5rem repeat(3,5rem);
+   grid-template-columns: 7rem 5rem repeat(3,5rem);
 }
 
 .header_table_news div{
@@ -25,4 +25,30 @@
    line-height: 2rem;
 }
 
+.container_info_news{
+   margin-top: 2rem;
+   margin-left: 2rem;
+}
+
+.header_info_news,.body_info_news{
+   display: grid;
+   grid-template-columns: 3rem 30rem 7rem 7rem 15rem;
+
+}
+
+.header_info_news div{
+   background-color: #2471a3;
+   color: #dbdadb;
+   text-align: center;
+   height: 2rem;
+   line-height: 2rem;
+}
+
+.body_info_news div{
+   border: .3rem solid #bbbb;
+   border-style: inset;
+   text-align: center;
+   height: 2rem;
+   line-height: 2rem;
+}
 

@@ -8,7 +8,7 @@ end_date = pd.to_datetime("2025-04-30")
 
 def fetch_news_data(id_new_name):
     conn = get_connection()
-    query = "SELECT * FROM economic_news_data WHERE id_new_name = %s"
+    query = "SELECT * FROM economic_news_data WHERE id_new_name = %s ORDER BY publication_date DESC"
     df = pd.read_sql(query, conn, params=[id_new_name])
     conn.close()
 

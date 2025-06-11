@@ -12,12 +12,33 @@
    <button class="btn-select-news-name">See News</button>
 </div>
 
+<div class="container_info_news">
+   <div class="header_info_news">
+      <div>ID</div>
+      <div>Name</div>
+      <div>Freequency</div>
+      <div>Value</div>
+      <div>Site</div>
+   </div>
+   <div class="body_info_news">
+      <div>ID</div>
+      <div>Name</div>
+      <div>Freequency</div>
+      <div>Value</div>
+      <div>Site</div>
+   </div>
+</div>
+
+<div class="container_description_news">
+   <div class="div_description">
+
+   </div>
+</div>
+
 <div class="container_table_news">
    <div class="header_table_news">
       <div>Date</div>
       <div>Hour</div>
-      <div>Name</div>
-      <div>Freq</div>
       <div>Actual</div>
       <div>Expect</div>
       <div>Prev</div>
@@ -32,6 +53,9 @@
 
    const viewDataFn = async () =>{
 
+      const jsonFetch = await fetch('/static/data_info_news.json').then(res => res.json()).then(res => res).catch(err => console.error(err));
+      console.log(jsonFetch)
+
       const url = '/api/news_name_data';
 
       const dataFetch = await fetch(url).then(res => res.json()).then(res => res).catch(err => console.error(err));
@@ -43,22 +67,38 @@
 
       dataFetch.news_name.forEach( data => {
          let name = data.new_name;
-         let id_new_name = data.id_new_name;
+         let id = data.id_new_name;
+         let freq = data.frequency;
+         let value = data.new_value;
+         let site = data.new_site;
 
          const optionNewsName = `
-            <option value="${id_new_name}">${name}</option>
+            <option value="${id}|${freq}|${value}|${site}">${id} - ${name}</option>
          `;
 
          selectNewsName.innerHTML += optionNewsName;
       });
 
+      const bodyInfoNews = document.querySelector(".body_info_news");
       const bodyTableNews = document.querySelector(".body_table_news");
 
-      btnAplyNewsName.addEventListener('click', async () => {
+      btnAplyNewsName.addEventListener('click', async (e) => {
          bodyTableNews.innerHTML = '';
+         let id = selectNewsName.value.split("|")[0];
+         let freq = selectNewsName.value.split("|")[1];
+         let value_new = selectNewsName.value.split("|")[2];
+         let site_new = selectNewsName.value.split("|")[3];
+
+         bodyInfoNews.innerHTML = `
+                  <div>${id}</div>
+                  <div>Name</div>
+                  <div>${freq}</div>
+                  <div>${value_new}</div>
+                  <div><a href="${site_new}" target="_blank" >Site</a></div>
+         `;
 
          let nameNews = selectNewsName.options[selectNewsName.selectedIndex];
-         const url_news_data = `/api/news_data_${selectNewsName.value}`;
+         const url_news_data = `/api/news_data_${id}`;
 
          const newsData = await fetch(url_news_data).then(res => res.json()).then(res => res).catch(err => console.error(err));
          console.log(newsData);
@@ -69,14 +109,11 @@
             let previo = data.previous_value;
             let date = data.publication_date;
             let hour = data.publication_time;
-            let freq = data.frequency;
 
             let row = `
                      <div class="row_table_news">
                         <div>${date}</div>
                         <div>${hour}</div>
-                        <div>${nameNews.text}</div>
-                        <div>${freq}</div>
                         <div>${actual}</div>
                         <div>${expect}</div>
                         <div>${previo}</div>

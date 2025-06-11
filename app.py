@@ -111,7 +111,7 @@ def trend_endponint():
     trend_data, data_json = get_buysell()
     trend_streaks = get_trend_streaks()
     # avg_pos, avg_neg = get_streaks_average()
-    print(sorted(trend_streaks))
+    
     return jsonify(trend_data,trend_streaks,data_json)
 
 @app.route("/buysell/streak")

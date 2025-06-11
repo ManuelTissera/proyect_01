@@ -1,0 +1,93 @@
+[
+   {
+      "id": 105,
+      "description":"El ISM Non-Manufacturing PMI es el Índice de Gestores de Compras del sector no manufacturero en EE.UU. Mide la actividad económica basada en encuestas a empresas de servicios. Un valor superior a 50 indica expansión y uno inferior, contracción. Es un indicador clave del estado del sector servicios, que representa una gran parte del PBI estadounidense. Se publica mensualmente y puede influir en expectativas de mercado y decisiones de política monetaria.",
+      "detail":"Creo que esta lista"
+   },
+      {
+      "id": 110,
+      "description":"El Índice de Precios al Consumidor (CPI) mide el cambio anual en el precio de bienes y servicios desde la perspectiva del consumidor. Es un indicador clave de inflación en EE.UU. Un valor mayor al esperado sugiere presión inflacionaria y suele fortalecer al dólar, mientras que un valor menor se interpreta como señal débil, negativa para el dólar. Es publicado por la Oficina de Estadísticas Laborales y seguido de cerca por los mercados.",
+      "detail":""
+   },
+      {
+      "id": 111,
+      "description":"El Índice de Precios al Consumidor (CPI) mensual mide la variación de precios de bienes y servicios en EE.UU. respecto al mes anterior. Es una herramienta clave para evaluar la inflación a corto plazo. Un valor superior al esperado indica mayor presión inflacionaria y puede fortalecer al dólar, mientras que un dato por debajo sugiere debilidad económica. Es publicado por la Oficina de Estadísticas Laborales y tiene impacto en decisiones de política monetaria",
+      "detail":""
+   },
+   {
+      "id": 112,
+      "description":"El Índice de Precios al Consumidor Subyacente (Core CPI) mide el cambio anual en los precios de bienes y servicios en EE.UU., excluyendo alimentos y energía por su alta volatilidad. Es usado para analizar la inflación subyacente y guiar decisiones de política monetaria. Un valor superior al previsto suele interpretarse como señal de presión inflacionaria, positiva para el dólar; uno inferior indica menor presión y puede debilitarlo. Es publicado por la Oficina de Estadísticas Laborales",
+      "detail":""
+   },
+   {
+      "id": 113,
+      "description":"El Índice de Precios al Consumidor Subyacente (Core CPI) mensual mide la variación en los precios de bienes y servicios en EE.UU., excluyendo alimentos y energía, respecto al mes anterior. Es clave para evaluar la inflación subyacente a corto plazo. Un valor mayor al esperado indica presión inflacionaria, lo que suele fortalecer al dólar. Un dato menor sugiere menor presión, lo que puede debilitarlo. Es publicado por la Oficina de Estadísticas Laborales de EE.UU.",
+      "detail":""
+   },
+   {
+      "id": 114,
+      "description":"El Índice de Precios al Productor (PPI) mide el cambio mensual en los precios de bienes vendidos por los fabricantes en EE.UU. Es un indicador adelantado de la inflación, ya que los aumentos en costos de producción suelen trasladarse al consumidor. Un valor superior al previsto sugiere presión inflacionaria y puede fortalecer al dólar. Un dato inferior indica menor presión y puede debilitarlo. Es publicado por la Oficina de Estadísticas Laborales y seguido por los mercados",
+      "detail":""
+   },
+   {
+      "id": 115,
+      "description":"El Índice de Precios al Productor Subyacente (Core PPI) mide la variación mensual en los precios de bienes y servicios vendidos por los productores en EE.UU., excluyendo alimentos y energía por su volatilidad. Refleja la presión de costos desde el lado de la oferta y es considerado un indicador adelantado de inflación. Si los costos aumentan, pueden trasladarse al consumidor. Un valor alto fortalece al dólar; uno bajo indica menor presión inflacionaria y puede debilitarlo",
+      "detail":""
+   },
+   {
+      "id": 116,
+      "description":"El informe de Nonfarm Payrolls mide el cambio mensual en la cantidad de personas empleadas en EE.UU., excluyendo el sector agrícola. Es un indicador clave del mercado laboral y del consumo, que representa gran parte de la actividad económica. Un aumento mayor al esperado en el empleo es positivo para el dólar, ya que sugiere crecimiento económico. Un dato inferior indica posible desaceleración y puede debilitar la moneda. Es publicado por la Oficina de Estadísticas Laborales.",
+      "detail":""
+   },
+   {
+      "id": 117,
+      "description":"El informe Private Nonfarm Payrolls mide el cambio mensual en el número de empleados del sector privado en EE.UU., excluyendo trabajadores del gobierno, empleados domésticos, organizaciones sin fines de lucro y agricultura. Es un indicador clave del dinamismo económico, centrado en la creación de empleo real en empresas. Un dato superior al esperado señala mayor crecimiento y suele fortalecer al dólar; uno inferior se asocia con debilidad económica.",
+      "detail":""
+   },
+   {
+      "id": 118,
+      "description":"El dato de Initial Jobless Claims mide la cantidad de personas que solicitaron por primera vez el seguro de desempleo en EE.UU. durante la última semana. Es uno de los indicadores más tempranos sobre la situación del mercado laboral. Un número mayor al esperado indica un aumento en los despidos y suele ser negativo para el dólar. Un valor menor refleja un mercado laboral más sólido, lo que puede fortalecer la moneda. Es publicado semanalmente por el Departamento de Trabajo.",
+      "detail":""
+   },
+   {
+      "id": 2015,
+      "description":"",
+      "detail":""
+   },
+   {
+      "id": 2015,
+      "description":"",
+      "detail":""
+   },
+   {
+      "id": 2015,
+      "description":"",
+      "detail":""
+   },
+   {
+      "id": 2015,
+      "description":"",
+      "detail":""
+   },
+   {
+      "id": 2015,
+      "description":"",
+      "detail":""
+   },
+   {
+      "id": 2015,
+      "description":"",
+      "detail":""
+   },
+   {
+      "id": 2015,
+      "description":"",
+      "detail":""
+   },
+   {
+      "id": 2015,
+      "description":"",
+      "detail":""
+   }
+
+]
