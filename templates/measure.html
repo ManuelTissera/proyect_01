@@ -30,7 +30,7 @@
       const histOne = document.getElementById("histograma_one");
 
       const dateHistOne = dataFilterHistOne.map(row => row.Date);
-      const variance = dataFilterHistOne.map(row=> row.Variance);
+      const variance = dataFilterHistOne.map(row=> row.Variance).sort((a,b) => a - b);
 
       new Chart(histOne, {
          type: 'bar',

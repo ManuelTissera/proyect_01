@@ -28,7 +28,7 @@
 </div>
 
 <div class="container_draw_rsi">
-   <canvas id="chartDrawRSI" width="400px" height="200px"></canvas>
+   <canvas id="chartDrawRSI" class="draw_point" width="400px" height="200px"></canvas>
 </div>
 
 <div class="container_table_date_macd">
@@ -160,7 +160,7 @@
             <div>${dataFetch.PriceStreaks.Positive_Higher.NoResult.length}</div>
             <div>${meanArr(PositiveHigherRSI.NoResult[0]).toFixed(0)}</div>
             <div>${valueMeanPos.Higher.length}</div>
-            <div></div>
+            <div>50%</div>
          </div>
          <div class="row_macd_table b_row">
             <div>Lower</div>
@@ -198,6 +198,7 @@
 
       `;
 
+      console.log(dataFetch.PriceStreaks.Negative_Lower.length)
 
       const ctx = document.getElementById('chartDrawRSI').getContext('2d');
 
@@ -211,14 +212,17 @@
          };
       };
 
-      const profitData = NegativeLowerRSI.Profit[0] || [];
-      const lossData = NegativeLowerRSI.Loss[0] || [];
-      const noResultData = NegativeLowerRSI.NoResult[0] || [];
+      //  ----- DATA IN CHART.JS
+      const analyticPart = NegativeLowerRSI;
+
+      const profitData = analyticPart.Profit[0] || [];
+      const lossData = analyticPart.Loss[0] || [];
+      const noResultData = analyticPart.NoResult[0] || [];
 
       console.log(profitData)
-      // console.log(lossData)
-      // console.log(noResultData)
 
+
+      // Chart.js points
 
       new Chart(ctx, {
          type: 'scatter',

@@ -7,8 +7,10 @@ base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 file_path = os.path.join(base_dir, "Datasets", "US30_H1.csv")
 df = pd.read_csv(file_path)
 
+start_date = 2018
+
 df["Date"] = pd.to_datetime(df["Date"])
-df = df[df["Date"].dt.year >= 2015].reset_index(drop=True)
+df = df[df["Date"].dt.year >= start_date].reset_index(drop=True)
 
 
 def detect_macd_streaks(side="Negative", zone="Lower", mean_value=0.0, direction="ascending"):
@@ -74,7 +76,7 @@ def detect_macd_streaks(side="Negative", zone="Lower", mean_value=0.0, direction
     return results
 
 
-def find_price_streaks_after_macd_hist_cross(streaks_macd, target=700, limit=300, max_candles=80, mode="buy"):
+def find_price_streaks_after_macd_hist_cross(streaks_macd, target, limit, max_candles, mode="buy"):
     macd_hist = df["MACD_Hist"].tolist()
     open_list = df["Open"].tolist()
     high_list = df["High"].tolist()
@@ -173,13 +175,27 @@ def find_price_streaks_after_macd_hist_cross(streaks_macd, target=700, limit=300
 
     return results
 
+RSI_reference_positive = 0  
+RSI_reference_negative = 0  
 
-def get_macd_data(target=700, limit=500, max_candles=150):
+def get_macd_data(target=700, limit=700, max_candles=300):
     data = df[["Date", "MACD", "MACD_Signal", "MACD_Hist"]].copy()
 
     macd_values = df["MACD"].dropna()
-    macd_pos = macd_values[macd_values > 0]
-    macd_neg = macd_values[macd_values < 0]
+    
+    # Crear DataFrame auxiliar con MACD y RSI
+    macd_rsi = df[["MACD", "RSI_14"]].dropna()
+
+    # Filtrar por RSI si es necesario
+    if RSI_reference_negative > 0:
+        macd_neg = macd_rsi[(macd_rsi["MACD"] < 0) & (macd_rsi["RSI_14"] < RSI_reference_negative)]["MACD"]
+    else:
+        macd_neg = macd_rsi[macd_rsi["MACD"] < 0]["MACD"]
+
+    if RSI_reference_positive > 0:
+        macd_pos = macd_rsi[(macd_rsi["MACD"] > 0) & (macd_rsi["RSI_14"] > RSI_reference_positive)]["MACD"]
+    else:
+        macd_pos = macd_rsi[macd_rsi["MACD"] > 0]["MACD"]
 
     mean_macd_pos = macd_pos.mean()
     mean_macd_neg = macd_neg.mean()
@@ -229,5 +245,11 @@ def get_macd_data(target=700, limit=500, max_candles=150):
         "stats": stats,
         "valueGroups": value_groups,
         "StreaksMACD": streaks_macd,
-        "PriceStreaks": price_streaks
+        "PriceStreaks": price_streaks,
+        "startDate": start_date
     }
+
+
+
+
+

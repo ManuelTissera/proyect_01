@@ -2,7 +2,7 @@
    {
       "id": 105,
       "description":"El ISM Non-Manufacturing PMI es el Índice de Gestores de Compras del sector no manufacturero en EE.UU. Mide la actividad económica basada en encuestas a empresas de servicios. Un valor superior a 50 indica expansión y uno inferior, contracción. Es un indicador clave del estado del sector servicios, que representa una gran parte del PBI estadounidense. Se publica mensualmente y puede influir en expectativas de mercado y decisiones de política monetaria.",
-      "detail":"Creo que esta lista"
+      "detail":"diffusion"
    },
       {
       "id": 110,
@@ -50,8 +50,8 @@
       "detail":""
    },
    {
-      "id": 2015,
-      "description":"",
+      "id": 102,
+      "description":"El índice de precios del gasto en consumo personal (PCE) mide el cambio anual en los precios de bienes y servicios consumidos por los hogares en EE.UU. Es el indicador de inflación preferido por la Reserva Federal. Refleja mejor el comportamiento del consumo que otros índices como el CPI. Un valor alto indica presión inflacionaria y puede llevar a subas de tasas, fortaleciendo el dólar. En recesión, un alza podría afectar negativamente. Lo publica el Departamento de Comercio",
       "detail":""
    },
    {

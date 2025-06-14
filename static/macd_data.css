@@ -99,6 +99,10 @@
    line-height: 3rem;   
 }
 
+.b_row div:nth-child(9){
+   background-color: #c5c5c6;
+}
+
 
 /*  table date macd */
 
@@ -135,3 +139,22 @@
    height: 1.7rem;
    line-height: 1.7rem;
 }
+
+
+
+/*  Grafico */
+
+.container_draw_rsi{
+   border: .2rem solid #2e4053;
+   width: 500px;
+   margin: 1rem 0rem;
+}
+
+
+.draw_point{
+   width: 824px;
+   height: 400px;
+}
+
+
+

@@ -9,7 +9,10 @@
    <select name="news_name" id="id_news_name">
       <option value="">Select News</option>
    </select>
-   <button class="btn-select-news-name">See News</button>
+   <input id="date-from" type="date">
+   <input id="date-to" type="date">
+   <button class="btn-select-news-name" style="cursor:pointer">See News</button>
+
 </div>
 
 <div class="container_info_news">
@@ -23,16 +26,26 @@
    <div class="body_info_news">
       <div>ID</div>
       <div>Name</div>
-      <div>Freequency</div>
+      <div>Frequency</div>
       <div>Value</div>
       <div>Site</div>
    </div>
+   <article class="article_info_news"></article>
+
 </div>
+
 
 <div class="container_description_news">
    <div class="div_description">
 
    </div>
+</div>
+
+<div class="container_draw_one">
+</div>
+
+<div class="container_draw_candles">
+   <canvas id="chartDailyCandles"></canvas>
 </div>
 
 <div class="container_table_news">
@@ -60,20 +73,21 @@
 
       const dataFetch = await fetch(url).then(res => res.json()).then(res => res).catch(err => console.error(err));
       
-      console.log(dataFetch);
+      
 
       const selectNewsName = document.getElementById('id_news_name');
       const btnAplyNewsName = document.querySelector(".btn-select-news-name");
 
       dataFetch.news_name.forEach( data => {
          let name = data.new_name;
+         let name_en = data.new_name_en;
          let id = data.id_new_name;
          let freq = data.frequency;
          let value = data.new_value;
          let site = data.new_site;
 
          const optionNewsName = `
-            <option value="${id}|${freq}|${value}|${site}">${id} - ${name}</option>
+            <option value="${id}|${freq}|${value}|${site}|${name_en}">${id} - ${name}</option>
          `;
 
          selectNewsName.innerHTML += optionNewsName;
@@ -81,50 +95,244 @@
 
       const bodyInfoNews = document.querySelector(".body_info_news");
       const bodyTableNews = document.querySelector(".body_table_news");
+      const articleInfoNews = document.querySelector(".article_info_news");
+      const containerDrawOne = document.querySelector(".container_draw_one");
 
       btnAplyNewsName.addEventListener('click', async (e) => {
+
+         const dateFrom = document.getElementById('date-from');
+         const dateTo = document.getElementById('date-to');
+         console.log("fechas---",dateFrom.value);
+         console.log("fechas---",dateTo.value);
+
          bodyTableNews.innerHTML = '';
          let id = selectNewsName.value.split("|")[0];
          let freq = selectNewsName.value.split("|")[1];
          let value_new = selectNewsName.value.split("|")[2];
          let site_new = selectNewsName.value.split("|")[3];
+         let name_en = selectNewsName.value.split("|")[4];
 
          bodyInfoNews.innerHTML = `
                   <div>${id}</div>
-                  <div>Name</div>
+                  <div>${name_en}</div>
                   <div>${freq}</div>
                   <div>${value_new}</div>
                   <div><a href="${site_new}" target="_blank" >Site</a></div>
          `;
 
+
+         const infoNewsJson = jsonFetch.filter(arr => arr.id === Number(id))
+         const descriptionNews = infoNewsJson[0].description
+         const detailsNews = infoNewsJson[0].detail
+         console.log(detailsNews)
+         let chartType = detailsNews == 'diffusion' ? 'bar':'line';
+         articleInfoNews.textContent = descriptionNews
+
+         //  Chart.js data News 
+
          let nameNews = selectNewsName.options[selectNewsName.selectedIndex];
-         const url_news_data = `/api/news_data_${id}`;
+         const url_news_data = `/api/news_data_${id}_${dateFrom.value || '2015-01-01'}_${dateTo.value || '2025-01-01'}`;
 
-         const newsData = await fetch(url_news_data).then(res => res.json()).then(res => res).catch(err => console.error(err));
-         console.log(newsData);
 
-         newsData.forEach( data => {
+         const newsDataFetch = await fetch(url_news_data).then(res => res.json()).then(res => res).catch(err => console.error(err));
+
+            console.log(newsDataFetch);
+            const newsData = newsDataFetch.news_data;
+            const startDateNews = dateFrom.value ? dateFrom.value : newsDataFetch.start_date;
+            const endDateNews = dateTo.value ? dateTo.value : "2025-04-02";
+            
+
+            let newsDataChart = newsData;
+
+            newsData.forEach( data => {
             let actual = data.actual_value;
             let expect = data.expected_value;
             let previo = data.previous_value;
             let date = data.publication_date;
             let hour = data.publication_time;
 
+
             let row = `
                      <div class="row_table_news">
                         <div>${date}</div>
                         <div>${hour}</div>
-                        <div>${actual}</div>
-                        <div>${expect}</div>
-                        <div>${previo}</div>
+                        <div>${(Number(actual) * 100).toFixed(2)} %</div>
+                        <div>${(Number(expect) * 100).toFixed(2)} %</div>
+                        <div>${(Number(previo) * 100).toFixed(2)} %</div>
                      </div>
             `;
 
-            bodyTableNews.innerHTML += row;
+            bodyTableNews.innerHTML += row;  
+            
+
 
          });
 
-         console.log(selectNewsName.value);
+            newsDataChart.sort((a, b) => new Date(a.publication_date) - new Date(b.publication_date));
+         
+
+            const oldCanvas = document.getElementById("draw_one");
+            if (oldCanvas) oldCanvas.remove();
+            const canvasOne = document.createElement("canvas");
+            canvasOne.id = "draw_one";
+            canvasOne.width = 1824;
+            canvasOne.height = 400;
+
+            containerDrawOne.appendChild(canvasOne);
+                     
+            const ctx = document.getElementById("draw_one").getContext("2d");
+
+            const labels = newsDataChart.map(item => item.publication_date);
+            const actualValues = newsDataChart.map(item => {
+              if(detailsNews == 'diffusion'){
+                return item.actual_value
+              }else if( detailsNews == 'rate'){
+                return +(Number(item.actual_value) * 100).toFixed(2);
+              }else if( detailsNews == 'numeric'){
+                  return item.actual_value;
+              }else {
+                return null;
+              }
+            });
+            const expectedValues = newsDataChart.map(item => {
+               if(detailsNews == 'diffusion'){
+                return item.expected_value
+               }else if(detailsNews == 'rate'){
+                return +(Number(item.expectedValues) * 100).toFixed(2);
+               }else{
+                return item.expected_value;
+               }
+            });
+            const yMinValue = (Math.min(...actualValues)).toFixed(2);
+            const yMaxValue = (Math.max(...actualValues)).toFixed(2);
+            console.log('yMinValue:',yMinValue,'yMaxValue:',yMaxValue)
+
+            // chart data news
+
+            const chart = new Chart(ctx, {
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                     type: chartType,
+                     label: "Actual Value",
+                     data: actualValues,
+                     borderWidth: 5,
+                     borderColor: "#2471a3",
+                     backgroundColor: chartType === "bar" ? "#2471a3" : undefined,
+                     tension: 0.1,
+                     pointRadius: chartType === "line" ? 3 : undefined,
+                     fill: chartType === "line" ? false : undefined
+                  },
+                  ...(chartType !== "bar"
+                    ? [{
+                        type: "bar",
+                        label: "Expected Value",
+                        data: expectedValues,
+                        backgroundColor: "#888888",
+                        borderWidth: 0,
+                        barThickness: 1,
+                        categoryPercentage: 1.0,
+                        barPercentage: 1.0
+                      }]
+                    : [])
+                ]
+              },
+               options: {
+                 responsive: true,
+                 scales: {
+                   x: {
+                     title: { display: false, text: "Fecha" }
+                   },
+                   y: {
+                     title: { display: true, text: "Valor" },
+                     beginAtZero: false,
+                     min: detailsNews == 'diffusion' ? 30 : (yMinValue * .97),
+                     max: detailsNews == 'diffusion' ? 80 : (yMaxValue * 1.04)
+                   }
+                 },
+                 plugins: chartType === "bar" ? {
+                   annotation: {
+                     annotations: {
+                       lineaReferencia: {
+                         type: 'line',
+                         yMin: 50,
+                         yMax: 50,
+                         borderColor: '#900C3F',
+                         borderWidth: 4,
+                         label: {
+                           enabled: true,
+                           content: '50',
+                           position: 'end',
+                           backgroundColor: 'transparent',
+                           color: '#900C3F',
+                           font: {
+                             weight: 'bold'
+                           }
+                         }
+                       }
+                     }
+                   }
+                 } : {}
+               }
+
+               // Fin Options
+
+            });
+
+
+            // inside event data ".xlsx"
+
+            const url_xlsx_data = `/api/news_data_sql_xlsx_${startDateNews}_${endDateNews}`;
+            console.log(startDateNews,'---- esto es lo que fue al back')
+            console.log(endDateNews,'---- esto es lo que fue al back')
+            const dataXlsx = await fetch(url_xlsx_data).then(res => res.json()).then(res => res).catch(err => console.error(err));
+            console.log(dataXlsx)
+
+
+            const drawDailyCandles = (dataXlsx) => {
+            const candleData = dataXlsx.map(d => ({
+              x: new Date(d.Date).getTime(),
+              o: d.Open,
+              h: d.High,
+              l: d.Low,
+              c: d.Close
+            }));
+          
+            new Chart(document.getElementById("chartDailyCandles").getContext("2d"), {
+              type: "candlestick",
+              data: {
+                datasets: [{
+                  label: "US30 Daily Candles",
+                  data: candleData,
+                  color: {
+                    up: "green",
+                    down: "red",
+                    unchanged: "gray"
+                  }
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  x: {
+                    type: "time",
+                    time: { unit: "day" },
+                    title: { display: true, text: "Fecha" }
+                  },
+                  y: {
+                    title: { display: true, text: "Precio" }
+                  }
+                }
+              }
+            });
+          };
+
+          drawDailyCandles(dataXlsx);
+          
+
+         
       })
 
 
@@ -135,3 +343,7 @@
 
 
 {% endblock %}
+
+
+
+

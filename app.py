@@ -12,7 +12,7 @@ from analytics.SMAs.SMA import get_sma_data
 from analytics.SMAs.SMA_edit import get_sma_data_edit
 from analytics.SMAs.SMA_manual_range import get_sma_manual_range
 from analytics.news_data.news_data import load_economic_news
-from analytics.news_data.news_data_sql import fetch_news_data,fetch_news_name
+from analytics.news_data.news_data_sql import fetch_news_data,fetch_news_name,fetch_us30_data
 from analytics.data_info.monetary_base import get_data_monetary_base
 
 
@@ -296,11 +296,18 @@ def get_news_name_data():
         "news_name": names
     })
 
-@app.route("/api/news_data_<id_new_name>")
-def get_news_data(id_new_name):
-    data = fetch_news_data(id_new_name)
+@app.route("/api/news_data_<int:id_new_name>_<start_date>_<end_date>")
+def get_news_data(id_new_name, start_date, end_date):
+    result = fetch_news_data(id_new_name, start=start_date, end=end_date)
+    return jsonify({
+        "news_data": result["data"],
+        "start_date": result["start_date"]
+    })
+
+@app.route("/api/news_data_sql_xlsx_<start_date>_<end_date>")
+def get_news_data_sql_xlsx(start_date, end_date):
+    data = fetch_us30_data(start=start_date, end=end_date)
     return jsonify(data)
-     
 
 # ==================== NEWS ==========================
 
