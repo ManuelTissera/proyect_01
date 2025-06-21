@@ -89,3 +89,74 @@
    
 }
 
+
+/* tables news post analaysis */
+
+
+.container_post_news_analysis{
+   background-color: #262627 ;
+   width: max-content
+}
+
+.first_row_post_news{
+   width: max-content;
+   padding: 0.3rem;
+}
+
+.first_row_post_news div{
+   color:#7cacf8;
+   font-weight: bold;
+}
+
+.first_row_post_news div span{
+   color:#54bbdb; 
+   font-weight: medium;
+}
+
+
+.row_post_news_analysis{
+   display: grid;
+   grid-template-columns: 12rem repeat(2,10rem) 11rem;
+   border-bottom: 0.1rem solid #ccc;
+   font-weight: bold;
+   width: max-content
+}
+
+
+.row_post_news_analysis div span:nth-child(even){
+   /* border-right: .2rem solid #fff; */
+   color:#987ffc;
+   padding-right: 0.2rem;
+   font-style: italic;
+}
+
+.row_post_news_analysis div span:nth-child(even)::after{
+   content: ",";
+   font-size: 20px;
+   color: #fff;
+   display: inline-block;
+   width: 0.2rem;
+   height: 1rem;
+   margin-left: 4px;
+   /* background-color: #987ffc; */
+
+}
+
+.row_post_news_analysis div span:nth-child(odd){
+   color:#888;
+}
+
+
+.row_post_news_analysis div{
+   padding:0.3rem;
+   background-color: #262627;
+}
+
+
+
+.num_range{
+   color: #7cacf8 !important;
+   font-weight: bold;
+}
+
+

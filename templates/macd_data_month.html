@@ -1,0 +1,286 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h1>MACD data Monthly</h1>
+
+
+
+<div class="container_gral_macd_month">
+   
+   <div class="container_table_macdm_month">
+      <div class="header_table_macdm_month">
+         <div>Year</div>
+         <div>Side</div>
+         <div>Zone</div>
+         <div>01</div>
+         <div>02</div>
+         <div>03</div>
+         <div>04</div>
+         <div>05</div>
+         <div>06</div>
+         <div>07</div>
+         <div>08</div>
+         <div>09</div>
+         <div>10</div>
+         <div>11</div>
+         <div>12</div>
+      </div>
+      <div class="body_table_macdm_month">
+
+      </div>
+   </div>
+
+   <div class="container_table_percentage_month">
+
+
+   </div>
+</div>
+
+
+<script>
+
+
+   const dataMacdMonth = async () => {
+      console.log('funciona data')
+      const url = "/api/macd_data_month"; 
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log(data);
+
+      const bdoyTableMonth = document.querySelector('.body_table_macdm_month');
+      
+      const yearObject = {}
+      
+      const monthlySorted = data.MonthlyObjectiveCounts.sort((a, b) => {
+        // Primero ordenar por año descendente
+        if (b.year !== a.year) return b.year - a.year;
+
+        // Si el año es el mismo, ordenar por side: "Positive" primero
+        if (a.side === "Positive" && b.side === "Negative") return -1;
+        if (a.side === "Negative" && b.side === "Positive") return 1;
+
+        return 0; // si son iguales, no mover
+      });
+      
+
+      const countPercMonth = {
+         "01": [], "04": [], "07": [], "10": [],
+         "02": [], "05": [], "08": [], "11": [],
+         "03": [], "06": [], "09": [], "12": [] 
+      }
+
+      monthlySorted.forEach(item => {
+         const year = item.year;
+
+         //console.log(item)
+         if(year in yearObject){
+            // console.log('-------------',item.year, 'no esta incluido');
+            
+         }else{
+
+            // console.log('Ya esta incluido el año',year);
+
+            const countObjMonth = {
+               "01": 0, "04": 0, "07": 0, "10": 0,
+               "02": 0, "05": 0, "08": 0, "11": 0,
+               "03": 0, "06": 0, "09": 0, "12": 0 
+            }
+
+            const countLimitMonth = {
+               "01": 0, "04": 0, "07": 0, "10": 0,
+               "02": 0, "05": 0, "08": 0, "11": 0,
+               "03": 0, "06": 0, "09": 0, "12": 0 
+            }
+
+            const countNoResMonth = {
+               "01": 0, "04": 0, "07": 0, "10": 0,
+               "02": 0, "05": 0, "08": 0, "11": 0,
+               "03": 0, "06": 0, "09": 0, "12": 0 
+            }
+
+            const rowTableMonth = document.createElement('div');
+            rowTableMonth.className = 'row_table_macdm_month';
+
+            const firstColumnMonth = document.createElement('div');
+            firstColumnMonth.className = 'first_column_table_macdm_month';
+            firstColumnMonth.textContent = year;
+
+            const lineContainer = document.createElement('div');
+            lineContainer.className = 'line_container_macdm_month';
+            const hr = document.createElement('hr');
+            //lineContainer.appendChild(hr);
+
+            
+            monthlySorted.forEach(element => {
+               if(element.year === item.year){
+                  // console.log(element.year, 'esta incluido');
+
+
+               element.ObjectiveProfit.forEach((value, index) => {
+                 const key = String(index + 1).padStart(2, "0"); // genera '01', '02', etc.
+                 countObjMonth[key] += value;
+               });
+
+               element.LimitLoss.forEach((value, index) => {
+                 const key = String(index + 1).padStart(2, "0"); // genera '01', '02', etc.
+                 countLimitMonth[key] += value;
+               });
+
+               element.NoResult.forEach((value, index) => {
+                 const key = String(index + 1).padStart(2, "0"); // genera '01', '02', etc.
+                 countNoResMonth[key] += value;
+               });
+
+
+               const lineMacdMonth = document.createElement('div');
+               lineMacdMonth.className = 'line_table_macdm_month';
+               lineMacdMonth.innerHTML = `
+                 <div class="zone_macdm">${element.side}</div>
+                 <div class="zone_macdm">${element.zone}</div>
+                 ${element.ObjectiveProfit.map(v => `<div>${v}</div>`).join("")}
+               `;
+               lineContainer.appendChild(lineMacdMonth);
+            }
+
+               rowTableMonth.appendChild(firstColumnMonth);
+               rowTableMonth.appendChild(lineContainer);
+
+               bdoyTableMonth.appendChild(rowTableMonth);
+            })
+
+            yearObject[year] = yearObject[year] || 0
+
+
+
+            //console.log(countObjMonth)
+            const orderMonthObj = Object.entries(countObjMonth)
+              .sort((a, b) => Number(a[0]) - Number(b[0]))
+              .map(entry => entry[1]);
+
+            const orderMonthLimit = Object.entries(countLimitMonth)
+              .sort((a, b) => Number(a[0]) - Number(b[0]))
+              .map(entry => entry[1]);
+
+            const orderMonthNoRes = Object.entries(countNoResMonth)
+              .sort((a, b) => Number(a[0]) - Number(b[0]))
+              .map(entry => entry[1]);
+
+            // console.log(orderMonthObj);
+
+            const lineMacdMonth = document.createElement('div');
+            lineMacdMonth.className = 'line_table_macdm_month';
+            lineMacdMonth.innerHTML = `
+              <div class="zone_macdm">Objective</div>
+              <div class="zone_macdm">Total</div>
+              ${orderMonthObj.map((v,index) => {
+               let total = orderMonthLimit[index] + orderMonthNoRes[index] + v;
+               let percObjective = (v == 0)? 0 : (v / total * 100).toFixed(0);
+
+               if(v != 0){
+                  countPercMonth[String(index + 1).padStart(2, "0")].push(percObjective);
+               }
+
+               return `<div>${percObjective}%</div>`;
+            }).join("")}
+            `;
+            lineContainer.appendChild(lineMacdMonth);
+
+            return
+         }
+         
+
+         
+
+
+      });
+
+
+
+
+
+      const containerTablePercentageMonth = document.querySelector('.container_table_percentage_month');
+
+
+      Object.entries(countPercMonth)
+         .sort((a, b) => Number(a[0]) - Number(b[0]))
+         .forEach( element => {
+         const month = element[0];
+         const percValues = (element[1].reduce((acc, val) => acc + Number(val), 0)) / element[1].length;
+         console.log(`Month ${month}: ${percValues.toFixed(0)} % ${element[1]}`);
+
+
+      })
+      
+
+      containerTablePercentageMonth.innerHTML += `
+      
+            <div class="container_table_info_data_macd_month">
+         <div>
+            <span>Target:</span>
+            <span>${data.DataInfo.target}</span>
+         </div>
+         <div>
+            <span>Limit:</span>
+            <span>${data.DataInfo.limit}</span>
+         </div>         
+         <div>
+            <span>Candles:</span>
+            <span>${data.DataInfo.max_candles}</span>
+         </div>
+         <div>
+            <span>RSI Refe. Pos:</span>
+            <span>${data.DataInfo.RSI_reference_positive}</span>
+         </div>
+         <div>
+            <span>RSI Refe. Neg:</span>
+            <span>${data.DataInfo.RSI_reference_negative}</span>
+         </div>
+         <div></div>
+         <div>
+            <span>Mean MACD Pos:</span>
+            <span>${data.DataInfo.mean_macd_pos.toFixed(0)}</span>
+         </div>          
+         <div>
+            <span>Mean MACD Neg:</span>
+            <span>${data.DataInfo.mean_macd_neg.toFixed(0)}</span>
+         </div>                              
+      </div>
+      
+      `;
+
+
+
+      containerTablePercentageMonth.innerHTML += `
+                  <div class="header_table_percentage_month">
+                     <div>Month</div>
+                     ${Object.entries(countPercMonth)
+                        .sort((a, b) => Number(a[0]) - Number(b[0]))
+                        .map(v => {
+                        let month = v[0];
+                        return `<div>${month}</div>`;
+                     }).join("")}
+                  </div>
+                  <div class="body_table_percentage_month">
+                     <div>Percentage</div>
+                     ${Object.entries(countPercMonth)
+                        .sort((a, b) => Number(a[0]) - Number(b[0]))
+                        .map(v => {
+                        let percentage = (v[1].reduce((acc, val) => acc + Number(val), 0)) / v[1].length;
+                        
+                        return `<div>${percentage.toFixed(0)} %</div>`;
+                     }).join("")}
+                  </div>
+      `
+
+
+      console.log(yearObject);
+   };
+
+   dataMacdMonth();
+
+   
+</script>
+
+
+{% endblock %}

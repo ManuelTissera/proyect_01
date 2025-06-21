@@ -5,15 +5,18 @@
 
 
 <h1>MACD Data</h1>
+<h1>Armar una columna de seleccion</h1>
+
+<li>
+   <ul><a href="{{ url_for('macd_data_monthly') }}">MACD Data Monthly</a></ul>
+</li>
 
 <div class="blocks_macd_container"></div>
 
+<div class="container_data_info"></div>
 <div class="container_macd_table">
-   <div class="row_macd_table h_row_one">
-      <div></div>
-      <div>MACD + </div>
-      <div>MACD - </div>
-   </div>
+   
+
 
    <div class="body_macd_table">
       <div class="row_macd_table h_row_two">
@@ -36,6 +39,7 @@
       <div></div>
       <div>MACD -</div>
       <div>MACD +</div>
+      <div>Rest</div>
    </div>
    <div class="first_row_table_date row_date_macd">
       <div>Date</div>
@@ -43,6 +47,8 @@
       <div>Higher</div>
       <div>Lower</div>
       <div>Higher</div>
+      <div>Rest</div>
+      <div>% Obj</div>
    </div>
 
 </div>
@@ -79,6 +85,13 @@
          "Positive_Higher": {},
          "Positive_Lower": {}
       };
+
+      let yearlyLimitNoResultCount = {
+         "Negative_Higher": {},
+         "Negative_Lower": {},
+         "Positive_Higher": {},
+         "Positive_Lower": {}
+      };
       
       Object.entries(dataFetch.PriceStreaks).forEach(data => {
          const title = data[0];
@@ -95,6 +108,17 @@
                   yearlyMACDCount[title][year] = 1;
                } else {
                   yearlyMACDCount[title][year]++;
+               }
+            });
+         });
+
+         ["LimitLoss", "NoResult"].forEach(key => {
+            data[1][key].forEach(obj => {
+               const year = obj.From.split("-")[0];
+               if (!yearlyLimitNoResultCount[title][year]) {
+                  yearlyLimitNoResultCount[title][year] = 1;
+               } else {
+                  yearlyLimitNoResultCount[title][year]++;
                }
             });
          });
@@ -149,6 +173,29 @@
       const blocksMACDContainer = document.querySelector(".blocks_macd_container");
 
       const bodyMACDTable = document.querySelector(".body_macd_table");
+      const visorDataInfo = document.querySelector(".container_data_info");
+
+      visorDataInfo.innerHTML = `
+         <div class="container_data_info_block">
+            <span>From: <span>${dataFetch.dataInfo.startDate}</span></span> |
+            <span>Target: <span>${dataFetch.dataInfo.target}</span></span> |
+            <span>Limit: <span>${dataFetch.dataInfo.limit}</span></span> |
+            <span>Max Candles: <span>${dataFetch.dataInfo.max_candles}</span></span> |
+         </div>
+         <div class="container_data_info_block">
+            <span>MACD Mean Negative: <span>${meanMACDNeg.toFixed(2)}</span></span> |
+            <span>MACD Mean Positive: <span>${meanMACDPos.toFixed(2)}</span></span>
+            <span>RSI Positive: <span>${dataFetch.dataInfo.RSI_reference_positive}</span></span> |
+            <span>RSI Negative: <span>${dataFetch.dataInfo.RSI_reference_negative}</span></span> |
+         </div>
+      `;
+      function getObjectivePercentage(group) {
+        const total = group.ObjectiveProfit.length + group.LimitLoss.length + group.NoResult.length;
+        if (total === 0) return 0;
+        return ((group.ObjectiveProfit.length / total) * 100).toFixed(2);
+      };
+  
+
 
       bodyMACDTable.innerHTML += `
          <div class="row_macd_table b_row">
@@ -160,7 +207,7 @@
             <div>${dataFetch.PriceStreaks.Positive_Higher.NoResult.length}</div>
             <div>${meanArr(PositiveHigherRSI.NoResult[0]).toFixed(0)}</div>
             <div>${valueMeanPos.Higher.length}</div>
-            <div>50%</div>
+            <div>${getObjectivePercentage(dataFetch.PriceStreaks.Positive_Higher)} %</div>
          </div>
          <div class="row_macd_table b_row">
             <div>Lower</div>
@@ -171,7 +218,7 @@
             <div>${dataFetch.PriceStreaks.Positive_Lower.NoResult.length}</div>
             <div>${meanArr(PositiveLowerRSI.NoResult[0]).toFixed(0)}</div>
             <div>${valueMeanPos.Lower.length}</div>
-            <div></div>
+            <div>${getObjectivePercentage(dataFetch.PriceStreaks.Positive_Lower)} %</div>
          </div>
          <div class="row_macd_table b_row">
             <div>Higher</div>
@@ -182,7 +229,7 @@
             <div>${dataFetch.PriceStreaks.Negative_Higher.NoResult.length}</div>
             <div>${meanArr(NegativeHigherRSI.NoResult[0]).toFixed(0)}</div>
             <div>${valueMeanNeg.Higher.length}</div>
-            <div></div>
+            <div>${getObjectivePercentage(dataFetch.PriceStreaks.Negative_Higher)} %</div>
          </div>
          <div class="row_macd_table b_row">
             <div>Lower</div>
@@ -193,7 +240,7 @@
             <div>${dataFetch.PriceStreaks.Negative_Lower.NoResult.length}</div>
             <div>${meanArr(NegativeLowerRSI.NoResult[0]).toFixed(0)}</div>
             <div>${valueMeanNeg.Lower.length}</div>
-            <div></div>
+            <div>${getObjectivePercentage(dataFetch.PriceStreaks.Negative_Lower)} %</div>
          </div>
 
       `;
@@ -219,7 +266,6 @@
       const lossData = analyticPart.Loss[0] || [];
       const noResultData = analyticPart.NoResult[0] || [];
 
-      console.log(profitData)
 
 
       // Chart.js points
@@ -261,6 +307,23 @@
       });
       let sortedYears = Array.from(allYears).sort();
 
+      console.log('------------------------------------------')
+      console.log(yearlyMACDCount)
+      console.log('------------------------------------------')
+      console.log(yearlyLimitNoResultCount)
+
+      const sumRest = (year) => {
+
+         let totalRest = ["Negative_Higher", "Negative_Lower", "Positive_Higher", "Positive_Lower"]
+            .reduce((acc, key) => acc + (yearlyLimitNoResultCount[key]?.[year] || 0), 0);
+         let totalObjective = ["Negative_Higher", "Negative_Lower", "Positive_Higher", "Positive_Lower"]
+            .reduce((acc, key) => acc + (yearlyMACDCount[key]?.[year] || 0), 0);
+
+         let totalAll = totalRest + totalObjective;
+         let percObjective = ((totalObjective / totalAll) * 100).toFixed(2);
+         return [percObjective,totalRest];
+
+      };
 
       sortedYears.forEach(year => {
          const row = `
@@ -270,6 +333,8 @@
                <div>${yearlyMACDCount.Negative_Higher[year] || 0}</div>
                <div>${yearlyMACDCount.Positive_Lower[year] || 0}</div>
                <div>${yearlyMACDCount.Positive_Higher[year] || 0}</div>
+               <div>${sumRest(year)[1]}</div>
+               <div>${sumRest(year)[0]}</div>
             </div>
          `;
          containerTableMACDDate.innerHTML += row;

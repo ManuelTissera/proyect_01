@@ -8,11 +8,13 @@ from analytics.buysells.buysell_years import get_dynamic_validation_by_year, get
 from analytics.buysells.buysell_years_rsi import get_multiple_years_data_rsi
 from analytics.trends.trends_percentage import find_bullish_trends
 from analytics.trends.macd_data import get_macd_data
+from analytics.trends.macd_data_month import get_macd_data_month
 from analytics.SMAs.SMA import get_sma_data
 from analytics.SMAs.SMA_edit import get_sma_data_edit
 from analytics.SMAs.SMA_manual_range import get_sma_manual_range
 from analytics.news_data.news_data import load_economic_news
 from analytics.news_data.news_data_sql import fetch_news_data,fetch_news_name,fetch_us30_data
+from analytics.news_data.after_news import analyze_post_news_movements
 from analytics.data_info.monetary_base import get_data_monetary_base
 
 
@@ -50,6 +52,10 @@ def monetary_base():
 @app.route("/macd_data")
 def macd_data():
     return render_template("macd_data.html")
+
+@app.route("/macd_data_monthly")
+def macd_data_monthly():
+    return render_template("macd_data_month.html")
 
 @app.route("/buysell_trend")
 def buysell_trend():
@@ -263,6 +269,11 @@ def macd_data_req():
     data = get_macd_data()
     return jsonify(data)
 
+@app.route("/api/macd_data_month")
+def macd_data_month_req():
+    data = get_macd_data_month()
+    return jsonify(data)
+
 
 # ------------==--------------------
 
@@ -308,6 +319,26 @@ def get_news_data(id_new_name, start_date, end_date):
 def get_news_data_sql_xlsx(start_date, end_date):
     data = fetch_us30_data(start=start_date, end=end_date)
     return jsonify(data)
+
+
+@app.route("/api/after_news_analysis", methods=["GET"])
+def after_news_analysis():
+    id_new_name = request.args.get("id_new_name", type=int)
+    from_date = request.args.get("from_date", default="2015-01-01")
+    to_date = request.args.get("to_date", default="2025-04-01")
+
+    # Traer fechas de publicación
+    raw_news = fetch_news_data(id_new_name, from_date, to_date)["data"]
+    news_df = pd.DataFrame(raw_news)
+
+    # Obtener solo la fecha (sin hora)
+    news_df["publication_datetime"] = pd.to_datetime(news_df["publication_date"]).dt.date
+    news_dates = news_df["publication_datetime"].tolist()
+
+    # Ejecutar análisis
+    results = analyze_post_news_movements(news_dates, from_date, to_date)
+
+    return jsonify(results)
 
 # ==================== NEWS ==========================
 

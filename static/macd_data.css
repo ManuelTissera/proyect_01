@@ -36,6 +36,19 @@
    background-color: #c0392b;
 }
 
+/*  data info */
+.container_data_info{
+   background-color: #c5c5c6;
+   color: #222;
+   width: max-content;
+   padding: .3rem;
+}
+
+.container_data_info_block span span{
+   background-color: #fff;
+   padding: .1rem .5rem;
+}
+
 /*  table */
 
 .container_macd_table{
@@ -57,16 +70,17 @@
 
 .row_macd_table div:nth-child(1){
    border-left: .1rem solid var(--border-color);
+   
 }
 .h_row_one{
-   grid-template-rows: 1fr repeat(2,6.2rem);
+   grid-template-rows: 2rem repeat(2,6.05rem);
    border: none;
    border-top: .1rem solid var(--border-color);
    border-left: .1rem solid var(--border-color);
 }
 
 .h_row_one div{
-   height: 6.1rem;
+   height: 6.05rem;
    line-height: 6rem;
    border: none;
    border-bottom: .1rem solid var(--border-color);
@@ -83,14 +97,17 @@
 }
 
 .h_row_two{
-   grid-template-columns: 6.5rem repeat(4,8.5rem);
-   background-color: var(--border-color);
+   grid-template-columns: 6.5rem repeat(3,8.5rem) 11.5rem;
    color: #fff;
-   border-bottom: .1rem solid var(--border-color);
+   /* border-bottom: .1rem solid var(--border-color); */
+}
+.h_row_two div{
+   background-color: var(--border-color);
+   
 }
 
 .b_row{
-   grid-template-columns: 6.5rem repeat(4,6rem 2.5rem);
+   grid-template-columns: 6.5rem repeat(3,6rem 2.5rem) 6rem 5.5rem;
 
 }
 
@@ -101,6 +118,7 @@
 
 .b_row div:nth-child(9){
    background-color: #c5c5c6;
+   color: #333;
 }
 
 
@@ -108,12 +126,12 @@
 
 .header_table_date_macd{
    display: grid;
-   grid-template-columns: 6rem repeat(2, 12rem);
+   grid-template-columns: 6rem repeat(3, 12rem);
 }
 
 .row_date_macd{
    display: grid;
-   grid-template-columns: 6rem repeat(4,6rem);
+   grid-template-columns: 6rem repeat(6,6rem);
    text-align: center;
 }
 
@@ -131,6 +149,11 @@
 
 .row_date_macd div:nth-child(1), .header_table_date_macd div:nth-child(1){
    border-left: .1rem solid var(--border-color);
+}
+
+.row_date_macd div:nth-child(6){
+   background-color: #eaeded;
+   color: #333;
 }
 
 .first_row_table_date div{

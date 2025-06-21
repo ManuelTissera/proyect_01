@@ -8,10 +8,10 @@ file_path = os.path.join(base_dir, "Datasets", "US30_H1.csv")
 df = pd.read_csv(file_path)
 
 start_date = 2018
+end_date = 2025  
 
 df["Date"] = pd.to_datetime(df["Date"])
-df = df[df["Date"].dt.year >= start_date].reset_index(drop=True)
-
+df = df[(df["Date"].dt.year >= start_date) & (df["Date"].dt.year <= end_date)].reset_index(drop=True)
 
 def detect_macd_streaks(side="Negative", zone="Lower", mean_value=0.0, direction="ascending"):
     macd_series = df["MACD"].dropna().reset_index(drop=True)
@@ -176,9 +176,9 @@ def find_price_streaks_after_macd_hist_cross(streaks_macd, target, limit, max_ca
     return results
 
 RSI_reference_positive = 0  
-RSI_reference_negative = 0  
+RSI_reference_negative = 40  
 
-def get_macd_data(target=700, limit=700, max_candles=300):
+def get_macd_data(target=500, limit=500, max_candles=350):
     data = df[["Date", "MACD", "MACD_Signal", "MACD_Hist"]].copy()
 
     macd_values = df["MACD"].dropna()
@@ -246,7 +246,12 @@ def get_macd_data(target=700, limit=700, max_candles=300):
         "valueGroups": value_groups,
         "StreaksMACD": streaks_macd,
         "PriceStreaks": price_streaks,
-        "startDate": start_date
+        "dataInfo":{"startDate":start_date,
+                    "RSI_reference_positive":RSI_reference_positive,
+                    "RSI_reference_negative":RSI_reference_negative,
+                    "target": target,
+                    "limit": limit,
+                    "max_candles": max_candles}
     }
 
 

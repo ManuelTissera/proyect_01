@@ -48,6 +48,17 @@
    <canvas id="chartDailyCandles"></canvas>
 </div>
 
+<div class="container_post_news_analysis">
+  <div class="first_row_post_news">
+    <div>Fecha: <span>01-02-2022</span></div>
+  </div>
+
+
+
+
+  </div>
+</div>
+
 <div class="container_table_news">
    <div class="header_table_news">
       <div>Date</div>
@@ -102,8 +113,8 @@
 
          const dateFrom = document.getElementById('date-from');
          const dateTo = document.getElementById('date-to');
-         console.log("fechas---",dateFrom.value);
-         console.log("fechas---",dateTo.value);
+         // console.log("fechas---",dateFrom.value);
+         // console.log("fechas---",dateTo.value);
 
          bodyTableNews.innerHTML = '';
          let id = selectNewsName.value.split("|")[0];
@@ -191,7 +202,7 @@
               }else if( detailsNews == 'numeric'){
                   return item.actual_value;
               }else {
-                return null;
+                return item.actual_value;
               }
             });
             const expectedValues = newsDataChart.map(item => {
@@ -205,6 +216,8 @@
             });
             const yMinValue = (Math.min(...actualValues)).toFixed(2);
             const yMaxValue = (Math.max(...actualValues)).toFixed(2);
+            console.log('Actual Values:', actualValues);
+            console.log('Expected Values:', expectedValues);
             console.log('yMinValue:',yMinValue,'yMaxValue:',yMaxValue)
 
             // chart data news
@@ -247,7 +260,7 @@
                    y: {
                      title: { display: true, text: "Valor" },
                      beginAtZero: false,
-                     min: detailsNews == 'diffusion' ? 30 : (yMinValue * .97),
+                     min: detailsNews == 'diffusion' ? 30 : (yMinValue * .90),
                      max: detailsNews == 'diffusion' ? 80 : (yMaxValue * 1.04)
                    }
                  },
@@ -284,10 +297,10 @@
             // inside event data ".xlsx"
 
             const url_xlsx_data = `/api/news_data_sql_xlsx_${startDateNews}_${endDateNews}`;
-            console.log(startDateNews,'---- esto es lo que fue al back')
-            console.log(endDateNews,'---- esto es lo que fue al back')
+            // console.log(startDateNews,'---- esto es lo que fue al back')
+            // console.log(endDateNews,'---- esto es lo que fue al back')
             const dataXlsx = await fetch(url_xlsx_data).then(res => res.json()).then(res => res).catch(err => console.error(err));
-            console.log(dataXlsx)
+            //console.log(dataXlsx)
 
 
             const drawDailyCandles = (dataXlsx) => {
@@ -327,9 +340,71 @@
                 }
               }
             });
-          };
+            };
 
           drawDailyCandles(dataXlsx);
+
+          const containerPostNewsAnalysis = document.querySelector(".container_post_news_analysis");
+
+
+          const getPostNewsData = async (id,dateFrom,dateTo) => {
+            const urlPost = `/api/after_news_analysis?id_new_name=${id}&from_date=${dateFrom}&to_date=${dateTo}`;
+            try {
+              const res = await fetch(urlPost);
+              const postData = await res.json();
+              console.log(postData);
+
+              postData.forEach( data => {
+
+                containerPostNewsAnalysis.innerHTML += `
+                <div class="first_row_post_news">
+                  <div>Fecha: <span>${data.news_datetime}</span></div>
+                </div>
+                `;
+                
+
+
+                for(let i = 1; i < Object.entries(data).length; i++){
+
+                  let objectEntry = Object.entries(data)[i][1];
+
+                  const postNewsData = `
+                          <div class="body_post_news_analysis">
+                            <div class="row_post_news_analysis">
+                              <div>
+                                <span>RangeDay:</span>
+                                <span class="num_range">${Object.entries(data)[i][0]}</span>
+                              </div>
+                              <div>
+                                <span>Trend:</span>
+                                <span>${objectEntry.Trend}</span>
+                              </div>
+                              <div>
+                                <span>Range:</span>
+                                <span>${objectEntry.Range}</span>
+                              </div>
+                              <div>
+                                <span>Volatility:</span>
+                                <span>${objectEntry.Volatility}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                  `
+
+                  containerPostNewsAnalysis.innerHTML += postNewsData;
+                }
+                })
+                return postData;
+              }
+              
+             catch (err) {
+              console.error(err);
+              return null;
+            }
+          };
+
+          getPostNewsData(102,dateFrom.value,dateTo.value)
           
 
          
@@ -338,7 +413,7 @@
 
    }
 
-   viewDataFn()
+  viewDataFn()
 </script>
 
 

@@ -1,0 +1,111 @@
+
+
+
+:root{
+   --border-color: #2e4053;
+}
+
+.container_gral_macd_month{
+   display:flex
+}
+
+
+/* percentage table */
+
+.container_table_info_data_macd_month{
+   display: grid;
+   grid-template-columns:  repeat(2,13rem) 10rem;
+   width: 42rem;
+   margin-bottom: 1rem;
+}
+.container_table_info_data_macd_month div{
+   padding: 0.7rem;
+   background-color: #ddd;
+   color: #333;
+}
+
+.container_table_info_data_macd_month div span:nth-child(odd){
+   font-weight: bold;
+}
+
+
+.container_table_info_data_macd_month div span:nth-child(even){
+   padding: 0.3rem;
+   background-color: #fff;
+   border-radius: 0.2rem;
+}
+
+
+
+/* percentage table */
+
+.header_table_percentage_month, .body_table_percentage_month{
+   display: grid;
+   grid-template-columns:  6rem repeat(12, 3rem);
+   width: max-content;
+}
+
+.header_table_percentage_month, .body_table_percentage_month div{
+   height: 2.5rem;
+   line-height: 2.5rem;
+   
+   text-align: center;
+}
+
+.header_table_percentage_month{
+   background-color: var(--border-color);
+   color: #fff;
+}
+.body_table_percentage_month div{
+   border-bottom: .1rem solid var(--border-color);
+   border-left: .1rem solid var(--border-color);
+   
+}
+
+
+.body_table_percentage_month div:nth-child(13){
+   border-right: .1rem solid var(--border-color);
+}
+
+
+
+/* MACD MONTH */
+
+.header_table_macdm_month{
+   display: grid;
+   grid-template-columns: 6rem 6rem 6rem repeat(12, 3rem);
+   background-color: var(--border-color);
+   color: #fff;
+   width: max-content;
+}
+
+.row_table_macdm_month{
+   display: grid;
+   grid-template-columns: 6rem 58rem;
+}  
+   .first_column_table_macdm_month{
+      height: 12.75rem;
+      text-align: center;
+      line-height: 12.5rem;
+      border: .1rem solid var(--border-color);
+      border-top: none;
+   }
+
+   .line_table_macdm_month{
+      display: grid;
+      grid-template-columns: 6rem 6rem repeat(12, 3rem);
+   }
+
+   .line_table_macdm_month:nth-child(5){
+      background-color: #95a5a6;
+      color: #333;
+      width: max-content;
+   }
+
+.header_table_macdm_month div, .line_table_macdm_month div{
+   height: 2.5rem;
+   line-height: 2.5rem;
+   border-bottom: .1rem solid var(--border-color);
+   border-right: .1rem solid var(--border-color);
+   text-align: center
+}
