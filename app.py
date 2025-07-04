@@ -9,12 +9,14 @@ from analytics.buysells.buysell_years_rsi import get_multiple_years_data_rsi
 from analytics.trends.trends_percentage import find_bullish_trends
 from analytics.trends.macd_data import get_macd_data
 from analytics.trends.macd_data_month import get_macd_data_month
+from analytics.trends.bollinger_bands import get_bollinger_band_extremes, get_low_below_lower_band, get_bollinger_macd_dynamic_rule
+from analytics.trends.bollinger_bands import get_bollinger_streaks, get_bollinger_macd_streaks, get_bollinger_macd_dynamic_streaks
+from analytics.trends.ATR_trends import get_trend_and_diff_data, analyze_streaks
 from analytics.SMAs.SMA import get_sma_data
 from analytics.SMAs.SMA_edit import get_sma_data_edit
 from analytics.SMAs.SMA_manual_range import get_sma_manual_range
-from analytics.news_data.news_data import load_economic_news
 from analytics.news_data.news_data_sql import fetch_news_data,fetch_news_name,fetch_us30_data
-from analytics.news_data.after_news import analyze_post_news_movements
+from analytics.news_data.after_news import analyze_post_news_movements, correlate_post_news
 from analytics.data_info.monetary_base import get_data_monetary_base
 
 
@@ -56,6 +58,10 @@ def macd_data():
 @app.route("/macd_data_monthly")
 def macd_data_monthly():
     return render_template("macd_data_month.html")
+
+@app.route("/bollinger_bands")
+def bollinger_bands():
+    return render_template("bollinger_bands.html")
 
 @app.route("/buysell_trend")
 def buysell_trend():
@@ -321,38 +327,136 @@ def get_news_data_sql_xlsx(start_date, end_date):
     return jsonify(data)
 
 
+# ---------- endpoint /api/after_news_analysis -----------------
 @app.route("/api/after_news_analysis", methods=["GET"])
 def after_news_analysis():
     id_new_name = request.args.get("id_new_name", type=int)
-    from_date = request.args.get("from_date", default="2015-01-01")
-    to_date = request.args.get("to_date", default="2025-04-01")
+    from_date   = request.args.get("from_date", default="2015-01-01")
+    to_date     = request.args.get("to_date",   default="2025-04-01")
 
-    # Traer fechas de publicación
-    raw_news = fetch_news_data(id_new_name, from_date, to_date)["data"]
+    if id_new_name is None:
+        return jsonify({"error": "Missing 'id_new_name' parameter"}), 400
+
+    # 1) Fechas de publicación de ESA noticia
+    raw_news = fetch_news_data(id_new_name, start=from_date, end=to_date)["data"]
+    if not raw_news:
+        return jsonify([])          # nada que analizar
+
     news_df = pd.DataFrame(raw_news)
-
-    # Obtener solo la fecha (sin hora)
-    news_df["publication_datetime"] = pd.to_datetime(news_df["publication_date"]).dt.date
+    news_df["publication_datetime"] = (
+        pd.to_datetime(news_df["publication_date"]).dt.date
+    )
     news_dates = news_df["publication_datetime"].tolist()
 
-    # Ejecutar análisis
-    results = analyze_post_news_movements(news_dates, from_date, to_date)
-
+    # 2) Ejecutar análisis
+    results = analyze_post_news_movements(
+        id_new_name,        # <-- nuevo argumento (id)
+        news_dates,
+        from_date,
+        to_date
+    )
     return jsonify(results)
 
-# ==================== NEWS ==========================
 
-@app.route("/api/economic-news")
-def get_economic_news():
-    df = load_economic_news()
-    data = df.to_dict(orient="records")
+
+
+
+# -------- endpoint: /api/after_news_correlation -----------------
+@app.route("/api/after_news_correlation", methods=["GET"])
+def after_news_correlation():
+    # --- parámetros ------------------------------------------------
+    id_new_name = request.args.get("id_new_name", type=int)
+    range_key   = request.args.get("range_key", default="return4_10d")
+    metric      = request.args.get("metric",    default="Trend")
+    from_date   = request.args.get("from_date", default="2015-01-01")
+    to_date     = request.args.get("to_date",   default="2025-04-01")
+    min_obs     = request.args.get("min_obs",   default=10, type=int)
+
+    if id_new_name is None:
+        return jsonify({"error": "Missing 'id_new_name' parameter"}), 400
+
+    # --- fechas de esa noticia -------------------------------------
+    raw_news = fetch_news_data(id_new_name, start=from_date, end=to_date)["data"]
+    if not raw_news:
+        return jsonify({"error": "No news data for given id/date range"}), 404
+
+    news_df = pd.DataFrame(raw_news)
+    news_df["publication_datetime"] = (
+        pd.to_datetime(news_df["publication_date"]).dt.date
+    )
+    news_dates = news_df["publication_datetime"].tolist()
+
+    # --- calcular retornos y correlación ---------------------------
+    results = analyze_post_news_movements(
+        id_new_name,
+        news_dates,
+        from_date,
+        to_date
+    )
+
+    corr = correlate_post_news(
+        results,
+        range_key=range_key,
+        metric=metric,
+        min_obs=min_obs
+    )
+
+    return jsonify({
+        "id_new_name": id_new_name,
+        "range_key":   range_key,
+        "metric":      metric,
+        "correlation": corr       # {'n': ..., 'pearson': ..., 'spearman': ...}
+    })
+
+
+
+
+
+
+# ==================== BOLLINGER BANDS ==========================
+
+
+
+@app.route("/api/get_bollinger_macd_dynamic_overlap_api")
+def api_get_bollinger_macd_dynamic_overlap():
+    try:
+        tp_pct      = float(request.args.get("tp_pct", 0.01))
+        sl_pct      = float(request.args.get("sl_pct", 0.01))
+        max_candles = int(request.args.get("max_candles", 450))
+    except ValueError:
+        return jsonify({"error": "Invalid numeric parameters"}), 400
+
+    data = get_bollinger_macd_dynamic_rule(
+        tp_pct=tp_pct,
+        sl_pct=sl_pct,
+        max_candles=max_candles
+    )
     return jsonify(data)
 
+
+# =================  ATR  =========================================
+
+@app.route("/api/trend_diff_data")
+def get_trend_diff_data():
+    data = get_trend_and_diff_data()
+    return jsonify(data)
+
+@app.route("/api/measurements_data_ATR")
+def get_measurements_data_ATR():
+    data = analyze_streaks()
+    return jsonify(data)
+
+
+
+# ==========================================================
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
 
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+
+

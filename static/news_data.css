@@ -116,7 +116,7 @@
 
 .row_post_news_analysis{
    display: grid;
-   grid-template-columns: 12rem repeat(2,10rem) 11rem;
+   grid-template-columns: 13rem repeat(2,10rem) 11rem;
    border-bottom: 0.1rem solid #ccc;
    font-weight: bold;
    width: max-content

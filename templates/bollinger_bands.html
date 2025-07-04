@@ -1,0 +1,433 @@
+{% extends "layout.html" %}
+
+
+{% block body %}
+
+<h1>Bollinger Bands</h1>
+
+<div class="content_graf_bb">
+   <div class="container_graf_bb">
+   </div>
+</div>
+
+<div class="container_tab_frequency_month">
+
+</div>
+
+<div class="view"></div>
+
+<script>
+
+
+
+         const functionCount = (data,arr,min,max) =>{
+
+            let results = [];
+            arr.forEach(va => {
+               let num = data.streak_list.filter( v => v.Result === va && v.ATR_coeff >= min && v.ATR_coeff <= max).length
+               results.push(num)
+            })            
+
+            let proportion =  ((results[0] / (results[0] + results[1] + results[2])) * 100).toFixed(2);
+            console.log(`
+   Min: ${min} - Max: ${max}
+   Objective = ${results[0]}
+   Limit = ${results[1]}
+   NoResult = ${results[2]}
+   Proportion = ${proportion}
+            
+            `)
+         }
+
+
+         const quintilFn = (data) => {
+
+
+            const dataSorted = data.streak_list.sort((a,b) => a.ATR_coeff - b.ATR_coeff);
+            
+            const lengthData = dataSorted.length
+            
+            const Q1 = dataSorted.slice(0, lengthData * 0.2);
+            const Q2 = dataSorted.slice(lengthData * 0.2, lengthData * 0.4);
+            const Q3 = dataSorted.slice(lengthData * 0.4, lengthData * 0.6);
+            const Q4 = dataSorted.slice(lengthData * 0.6, lengthData * 0.8);
+            const Q5 = dataSorted.slice(lengthData * 0.8);
+
+
+            const proces = (Q) => {
+               const ObjCount = (Q) => {return Q.filter(v => v.Result === 'Objective').length};
+               const LimitCount = (Q) => {return Q.filter(v => v.Result === 'Limit').length};
+               let total = ObjCount(Q) + LimitCount(Q);
+               let percentage = ((ObjCount(Q) / total) * 100).toFixed(0);
+               let min_val = (Q[0].ATR_coeff).toFixed(5);
+               let max_val = (Q[Q.length - 1].ATR_coeff).toFixed(5);
+               let res = `Objective: ${ObjCount(Q)},Limit: ${LimitCount(Q)}, Total: ${total}, Percentage: ${percentage}   | Min ATR: ${min_val} | Max ATR: ${max_val} |`;
+               return res;
+            }
+
+
+            console.log('Q1 - ',proces(Q1));
+            console.log('Q2 - ',proces(Q2));
+            console.log('Q3 - ',proces(Q3));
+            console.log('Q4 - ',proces(Q4));
+            console.log('Q5 - ',proces(Q5));
+
+
+
+         }
+
+
+   
+      const getDataBollingerBands = async () => {
+
+         const ulrBollMACDOverlap = `/api/get_bollinger_macd_dynamic_overlap_api`;
+         const resBollMACDOverlap = await fetch(ulrBollMACDOverlap);
+         const dataBollMACDOverlap = await resBollMACDOverlap.json();
+         console.log(dataBollMACDOverlap);
+
+         const arrObjOver = [];
+         const arrLossOver = [];
+         const arrNoResOver = [];
+         const containerGrafBB = document.querySelector('.container_graf_bb');
+
+
+         const freqAbsMonth = {
+            "01":0,"04":0,"07":0, "10":0,
+            "02":0,"05":0,"08":0, "11":0,
+            "03":0,"06":0,"09":0, "12":0,
+         }
+
+         const freqAbsMonthObj = {
+            "01":0,"04":0,"07":0, "10":0,
+            "02":0,"05":0,"08":0, "11":0,
+            "03":0,"06":0,"09":0, "12":0,
+         }
+
+         const freqAbsMonthLoss = {
+            "01":0,"04":0,"07":0, "10":0,
+            "02":0,"05":0,"08":0, "11":0,
+            "03":0,"06":0,"09":0, "12":0,
+         }
+
+         const RSI_Obj = [];
+
+         const RSI_Loss = [];
+
+
+
+
+
+         dataBollMACDOverlap.data.forEach(item => {
+
+            const monthDate = item.EventBB.split('-')[1];
+
+            freqAbsMonth[monthDate] += 1;
+
+
+            const barGraf = document.createElement('div');
+            barGraf.className = 'bar_graf_bb';
+            barGraf.style.backgroundColor = item.Result === 'Objective' ? '#6b6' : item.Result === 'Limit' ? '#d66' : 'gray';
+            barGraf.style.border = `1px solid ${item.Result === 'Objective' ? '#3a3' : item.Result === 'Limit' ? '#a33' : 'gray'}`;
+            barGraf.textContent = `${monthDate}`;
+
+
+            containerGrafBB.appendChild(barGraf);
+
+
+            let result = item.Result;
+            if( result == 'Objective'){
+               freqAbsMonthObj[monthDate] += 1;
+               RSI_Obj.push(item.RSI_14);
+               arrObjOver.push(item);
+            } else if (result == 'Limit') {
+               freqAbsMonthLoss[monthDate] += 1;
+               RSI_Loss.push(item.RSI_14);
+               arrLossOver.push(item);
+            } else if (result == 'NoResult') {
+               arrNoResOver.push(item);
+            }
+            
+         })
+
+         console.log("Objective Overlap Results: ", arrObjOver);
+         console.log("Limit Overlap Results: ", arrLossOver);
+         console.log("No Result Overlap: ", arrNoResOver);
+
+         if(arrObjOver.length < arrLossOver.length){
+            let percentage = (arrLossOver.length - arrObjOver.length) / arrObjOver.length;
+            console.log(`${percentage * 100} more "Loss" than "Objective"`);
+         }else if(arrLossOver.length < arrObjOver.length){
+            let percentage = (arrObjOver.length - arrLossOver.length) / arrLossOver.length;
+            console.log(`${percentage * 100} more "Objective" than "Loss"`);
+         };
+
+         // Object.entries(freqAbsMonth).sort((a,b) => a[0] - b[0]).forEach(item => { console.log(item[1],'Month' )})
+         // Object.entries(freqAbsMonthObj).sort((a,b) => a[0] - b[0]).forEach(item => { console.log(item[1],'Objective' )})
+         // Object.entries(freqAbsMonthLoss).sort((a,b) => a[0] - b[0]).forEach(item => { console.log(item[1],'Loss' )})
+
+         const containerTabFrequencyMnth = document.querySelector(".container_tab_frequency_month");
+         containerTabFrequencyMnth.innerHTML = `
+               <div class="title_tab_frequency_month">Monthly absolute frequencies</div>
+               <div class="header_tab_frequency_month">
+                  <div></div>
+                  <div>01</div>
+                  <div>02</div>
+                  <div>03</div>
+                  <div>04</div>
+                  <div>05</div>
+                  <div>06</div>
+                  <div>07</div>
+                  <div>08</div>
+                  <div>09</div>
+                  <div>10</div>
+                  <div>11</div>
+                  <div>12</div>
+               </div>
+
+               <div class="row_tab_frequency_month">
+                  <div>Freq. Abs. Month</div>
+                     ${Object.entries(freqAbsMonth).sort((a,b) => a[0] - b[0])
+                        .map(item => {
+                           return `<div>${item[1]}</div>`
+                        }).join("")}
+               </div>
+
+               <div class="row_tab_frequency_month">
+                  <div>Freq. Obective</div>
+                     ${Object.entries(freqAbsMonthObj).sort((a,b) => a[0] - b[0])
+                        .map(item => {
+                           let valLoss = freqAbsMonthLoss[item[0]]
+                           let classDin = valLoss > item[1] ? "bg-red" : "bg-green";
+                           return `<div class="${classDin}">${item[1]}</div>`
+                        }).join("")}
+               </div>
+
+               <div class="row_tab_frequency_month">
+                  <div>Freq. LimitLoss</div>
+                     ${Object.entries(freqAbsMonthLoss).sort((a,b) => a[0] - b[0])
+                        .map(item => {
+                           return `<div>${item[1]}</div>`
+                        }).join("")}
+               </div>
+               
+         `;
+
+
+         console.log(RSI_Obj.reduce((a,v) => a + v, 0) / RSI_Obj.length);
+         console.log(RSI_Loss.reduce((a,v) => a + v, 0) / RSI_Loss.length);
+         
+         console.log(RSI_Obj)
+
+
+      };
+
+      // getDataBollingerBands();
+
+      const getDataATRTrends = async () => {
+
+         const urlInfo = `/api/measurements_data_ATR`;
+         const res = await fetch(urlInfo);
+         const dataART = await res.json();
+         
+         console.log('-------------------------------------------------------------')
+         console.log(dataART);
+         console.log('-------------------------------------------------------------')
+
+         dataART.data_result.Limit.filter()
+
+         function hdi50(group,cobert) {
+            let data = dataART.data_result[group]
+           if (!data.length) return null;
+                  
+           // 1) ordenar ascendente
+           const sorted = [...data].sort((a, b) => a - b);
+                  
+           // 2) tamaño de la ventana (50 %)
+           const m = Math.floor(sorted.length * cobert);   // p. ej. N=99 → m=49
+                  
+           // 3) deslizar la ventana y buscar la de menor anchura
+           let bestLow = 0;
+           let bestHigh = m - 1;
+           let minWidth = sorted[bestHigh] - sorted[bestLow];
+                  
+           for (let i = 1; i + m - 1 < sorted.length; i++) {
+             const width = sorted[i + m - 1] - sorted[i];
+             if (width < minWidth) {
+               minWidth = width;
+               bestLow = i;
+               bestHigh = i + m - 1;
+             }
+           }
+        
+           // 4) extremos del HDI
+           return {
+             group: group,
+             cobert: cobert * 100,
+             lower: sorted[bestLow],
+             upper: sorted[bestHigh],
+             width: minWidth,
+             median: sorted[Math.floor(sorted.length / 2)]
+           };
+         }
+         
+         // uso:
+         // const hdiObj = hdi50("Objective",0.5);
+         // console.log(`
+         //          ** ${hdiObj.group} **
+         //          — 50 % HDI: [${hdiObj.lower}, ${hdiObj.upper}] 
+         //          — ancho ${hdiObj.width}
+         //          — mediana: ${hdiObj.median}
+         //          — cobert: ${hdiObj.cobert}`);
+
+         // const hdiLoss = hdi50("Limit",0.5);
+         // console.log(`
+         //          ** ${hdiLoss.group} **
+         //          — 50 % HDI: [${hdiLoss.lower}, ${hdiLoss.upper}] 
+         //          — ancho ${hdiLoss.width}
+         //          — mediana: ${hdiLoss.median}
+         //          — cobert: ${hdiLoss.cobert}`);
+
+         // const hdiNoRes = hdi50("NoResult",0.5);
+         // console.log(`
+         //          ** ${hdiNoRes.group} **
+         //          — 50 % HDI: [${hdiNoRes.lower}, ${hdiNoRes.upper}] 
+         //          — ancho ${hdiNoRes.width}
+         //          — mediana: ${hdiNoRes.median}
+         //          — cobert: ${hdiNoRes.cobert}`);
+
+         
+         
+
+
+
+   
+
+
+      }
+
+      // getDataATRTrends();
+
+   
+      const chechPropotion = async () => {
+         const url = `/api/trend_diff_data`;
+         const res = await fetch(url);
+         const dataFetch = await res.json();
+
+         const dataStat = dataFetch.streak_stat;
+
+         const objIndicator = {
+            "Objective":[], "Limit":[], "NoResult":[]
+         }
+
+         let indicatorName;
+         const dataGroup = dataFetch.streak_list.filter( v => {
+            indicatorName = 'MACD_start';
+            let indicator = v[indicatorName];
+            let res = v.ATR_coeff >= 0.3 && v.ATR_coeff <= 1.7
+            if(v.Result == 'Objective'){objIndicator['Objective'].push(indicator)      
+            }else if(v.Result == 'Limit'){objIndicator['Limit'].push(indicator) 
+            }else{objIndicator['NoResult'].push(indicator) }
+            return res
+         })
+
+         console.log(dataGroup);
+         const viewDiv = document.querySelector(".view");
+         const content = `
+            indicator = ${indicatorName}
+            list_objective = [${objIndicator.Objective.sort((a,b) => b - a).join(", ")}]
+            list_limit = [${objIndicator.Limit.sort((a,b) => b - a).join(", ")}]
+            list_noresult = [${objIndicator.NoResult.sort((a,b) => b - a).join(", ")}]
+            `;
+         console.log(content)
+
+         let categories = ['Objective','Limit','NoResult'];
+
+         functionCount(dataFetch,categories,0,9);
+         functionCount(dataFetch,categories,0.3,1.7);
+
+         const objectYears = {};
+         const objectYearObj = {};
+         const objectYearLoss = {};
+
+         dataGroup.forEach(item => {
+           let year = item.EventBB.split("-")[0];
+         
+           if (!objectYears[year]) {
+             objectYears[year] = [];
+           }
+        
+           objectYears[year].push(item);
+
+           if( item.Result === 'Objective'){
+            if(!objectYearObj[year]){
+               objectYearObj[year] = [];
+            };
+            objectYearObj[year].push(item);
+           };
+
+           if( item.Result === 'Limit'){
+            if(!objectYearLoss[year]){
+               objectYearLoss[year] = [];
+            };
+            objectYearLoss[year].push(item);
+           };
+
+
+
+         });
+
+
+
+         console.log(`MinProfit: ${dataStat.min_profit}, LimitLoss: ${dataStat.limit_loss}, max_candles: ${dataStat.max_candles}`);        
+
+         Object.entries(objectYearObj).forEach(item => {
+            let prop_1 = (item[1].length / objectYearLoss[item[0]].length).toFixed(2);
+            let prop_2 = (objectYearLoss[item[0]].length / item[1].length).toFixed(2);
+            let objective = item[1].length
+            let loss = objectYearLoss[item[0]].length
+            console.log(`${item[0]}  -  ${objective} | ${loss} | Oper: ${objective - loss} | ${prop_1}  `)
+         })
+
+         
+
+         
+         
+      
+         const indicatorStat = (indicator) => {
+
+            const Objective = (dataGroup.filter( v => v.Result === 'Objective').map( v => v[indicator])).sort((a,b) => a - b);
+            const Limit = (dataGroup.filter( v => v.Result === 'Limit').map( v => v[indicator])).sort((a,b) => a - b);
+            const NoResult = (dataGroup.filter( v => v.Result === 'NoResult').map( v => v[indicator])).sort((a,b) => a - b);
+
+            const meanObjective = (Objective.reduce((a,b) => a + b, 0)) / Objective.length;
+            const meanLimit = (Limit.reduce((a,b) => a + b, 0)) / Limit.length;
+            const meanNoResult = (NoResult.reduce((a,b) => a + b, 0)) / NoResult.length;
+
+            console.log(`
+
+            Indicador = ${indicator}
+            
+            Mean Objective: ${meanObjective.toFixed(5)}  |  Min: ${Objective[0]}  |  Max:${Objective[Objective.length - 1]}  |  Length:${Objective.length}
+            Mean Limit:     ${meanLimit.toFixed(5)}  |  Min: ${Limit[0]}  |  Max:${Limit[Limit.length - 1]}  |  Length:${Limit.length}
+            Mean NoResult:  ${meanNoResult.toFixed(5)}  |  Min: ${NoResult[0]}  |  Max:${NoResult[NoResult.length - 1]}  |  Length:${NoResult.length}
+            `)
+
+         }
+         
+         indicatorStat("MACD_start")
+         indicatorStat("ROC_10")
+         indicatorStat("Momentum_10")
+
+      }
+
+      chechPropotion();
+
+
+
+
+</script>
+
+
+
+{% endblock %}
+

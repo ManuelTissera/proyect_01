@@ -49,14 +49,7 @@
 </div>
 
 <div class="container_post_news_analysis">
-  <div class="first_row_post_news">
-    <div>Fecha: <span>01-02-2022</span></div>
-  </div>
 
-
-
-
-  </div>
 </div>
 
 <div class="container_table_news">
@@ -362,9 +355,9 @@
                 </div>
                 `;
                 
+                 console.log(Object.entries(data).sort((a, b) => a[0].localeCompare(b[0])));
 
-
-                for(let i = 1; i < Object.entries(data).length; i++){
+                for(let i = 3 ; i < Object.entries(data).length; i++){
 
                   let objectEntry = Object.entries(data)[i][1];
 
@@ -407,7 +400,23 @@
           getPostNewsData(102,dateFrom.value,dateTo.value)
           
 
+          const getDataCorrelate = async (id,dateFrom,dateTo) => {
+            const urlCorrelate = `/api/after_news_correlation?id_new_name=${id}&from_date=${dateFrom}&to_date=${dateTo}`;
+
+            const res = await fetch(urlCorrelate);
+            const dataCorrelate = await res.json();
+            console.log(dataCorrelate);
+          }
          
+          getDataCorrelate(102,dateFrom.value,dateTo.value);
+
+
+
+
+
+
+
+
       })
 
 

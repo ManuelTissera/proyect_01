@@ -1,0 +1,82 @@
+
+
+
+
+:root{
+   --border-color: #2e4053;
+}
+
+
+.content_graf_bb{
+   width: 90vw;
+}
+
+.container_graf_bb{
+   display: flex;
+   border-left: .2rem solid #333;
+   border-bottom: .2rem solid #333;
+   overflow: scroll;
+
+}
+
+.bar_graf_bb{
+   /* background-color: #d66;
+   background-color: #6b6; */
+   display: inline-block;
+   width: 5rem;
+   height: 12rem;
+   /* border: .2rem solid #a33;
+   border: .2rem solid #3a3; */
+
+}
+
+
+
+.container_tab_frequency_month{
+   margin-top: 2rem;
+}
+
+.title_tab_frequency_month{
+   border: .2rem solid var(--border-color);
+   text-align: center;
+   width: 45.6rem;
+   height: 2rem;
+   line-height: 2rem;
+   font-weight: bold;
+}
+
+.header_tab_frequency_month, .row_tab_frequency_month{
+   display: grid;
+   grid-template-columns: 10rem repeat(12,3rem);
+   width: max-content;
+   text-align: center;
+}
+
+.header_tab_frequency_month{
+   background-color: var(--border-color);
+   color: #fff;
+}
+
+.header_tab_frequency_month div{
+   height: 2.5rem;
+   line-height: 2.5rem;
+}
+
+.row_tab_frequency_month div{
+   height: 2.5rem;
+   line-height: 2.5rem;
+   border-left: .1rem solid #333;
+   border-bottom: .1rem solid #333;
+}
+
+.row_tab_frequency_month div:nth-child(13){
+   border-right: .1rem solid #333;
+}
+
+.bg-green{
+   background-color: #3a3
+}
+
+.bg-red{
+   background-color: #a33;
+}
